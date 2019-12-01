@@ -6,19 +6,29 @@
         xmlns:local="clr-namespace:Paint"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
+        Closing="Window_Closing"
         Title="Super Puper Paint In The World" Height="450" Width="800">
     <Grid>
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="50" />
+                <ColumnDefinition Width="55" />
             </Grid.ColumnDefinitions>
             <Grid Grid.Column="0" x:Name="Canvas_Grid" Background="LightGray">
-                <Canvas x:Name="Canvas" MouseMove="Canvas_MouseMove" MouseLeftButtonDown="Canvas_MouseLeftButtonDown" PreviewMouseRightButtonDown="Canvas_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="Canvas_PreviewMouseRightButtonUp">
-
+                <Canvas>
+                    
                 </Canvas>
+                <Canvas x:Name="CordCanvas" Background="Transparent" Visibility="Hidden">
+                </Canvas>
+                <Canvas x:Name="Canvas" Background="Transparent" MouseMove="Canvas_MouseMove" MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseLeftButtonUp="Canvas_MouseLeftButtonUp" PreviewMouseRightButtonDown="Canvas_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="Canvas_PreviewMouseRightButtonUp">
+                
+                </Canvas>
+                
             </Grid>
-            <Grid Grid.Column="1" Background="Blue" Opacity="0.5">
+            <Grid Grid.Column="1" >
+                <Grid Background="BlueViolet">
+                
+                </Grid>
                 <WrapPanel Orientation="Vertical">
                     <Button Click="ClearLines_Click" Cursor="Hand" Width="20" Height="20" FontSize="17" Padding="0 -3 0 0" HorizontalAlignment="Right">⟳</Button>
                     <Label Height="2" Background="Gray" Margin="0 0 0 0"></Label>
@@ -29,11 +39,16 @@
                     <Button Click="GroupSelected_Click" Cursor="Hand">☐</Button>
                     <Button Click="UnGroupSelected_Click" Cursor="Hand">⁂</Button>
                     <Label Height="2" Background="Gray" ></Label>
-
+                    <Button Click="OpenMatrix_Click" Cursor="Hand">⌗</Button>
+                    <Label Height="2" Background="Gray" Margin="0 0 0 5 "></Label>
+                    <CheckBox Name="CordSystem_checkbox" HorizontalAlignment="Left" Foreground="White" Margin="5 0 0 0 " Unchecked="CordSyst_Checked" Checked="CordSyst_Checked">CК</CheckBox>
+                    <RadioButton Name="GlobalCordSystem_checkbox" HorizontalAlignment="Left" Foreground="White" Margin="5 0 0 0 " IsEnabled="False" GroupName="Cord" IsChecked="True" Checked="GlobalCordSystem_checkbox_Checked">Глоб</RadioButton>
+                    <RadioButton Name="LocalCordSystem_checkbox" HorizontalAlignment="Left" Foreground="White" Margin="5 0 0 0 " IsEnabled="False" GroupName="Cord" Click="LocalCordSystem_checkbox_Click">Лок</RadioButton>
+                    <Label Height="2" Background="Gray" Margin="0 5 0 5 "></Label>
                 </WrapPanel>
             </Grid>
         </Grid>
-        <StackPanel Orientation="Vertical" x:Name="PointInfo" Background="LightGray" Visibility="Hidden" Width="160" Height="30" HorizontalAlignment="Left" VerticalAlignment="Top">
+        <StackPanel Orientation="Vertical" x:Name="PointInfo" Background="LightGray" Visibility="Hidden" Width="190" Height="30" HorizontalAlignment="Left" VerticalAlignment="Top" PreviewMouseRightButtonDown="Canvas_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="Canvas_PreviewMouseRightButtonUp">
             <TextBlock x:Name="PointInfo_Point" />
             <TextBlock x:Name="PointInfo_Line" />
         </StackPanel>

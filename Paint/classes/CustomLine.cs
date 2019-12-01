@@ -8,6 +8,7 @@ using System.Windows.Media;
 using System.Windows;
 using System.Runtime.InteropServices;
 using Paint.interfaces;
+using System.Windows.Media.Media3D;
 
 namespace Paint
 {
@@ -26,6 +27,12 @@ namespace Paint
 
         Brush brush;
         Brush selectedBrush;
+
+        double Z1;
+        double Z2;
+
+        public Point3D originalPoint1;
+        public Point3D originalPoint2;
 
         public new Brush Stroke
         {
@@ -86,12 +93,17 @@ namespace Paint
 
         public override void CacheDefiningGeometry()
         {
-            var line = new LineGeometry(new Point(this.X1, this.Y1), new Point(this.X2, this.Y2));
+            var x1 = this.X1 + MainWindow.CordCenter.X;
+            var x2 = this.X2 + MainWindow.CordCenter.X;
+            var y1 = this.Y1 + MainWindow.CordCenter.Y;
+            var y2 = this.Y2 + MainWindow.CordCenter.Y;
+
+            var line = new LineGeometry(new Point(x1, y1), new Point(x2, y2));
 
             if (isSelected)
             {
-                var point1 = new EllipseGeometry(new Point(X1, Y1), this.StrokeThickness, this.StrokeThickness);
-                var point2 = new EllipseGeometry(new Point(X2, Y2), this.StrokeThickness, this.StrokeThickness);
+                var point1 = new EllipseGeometry(new Point(x1, y1), this.StrokeThickness, this.StrokeThickness);
+                var point2 = new EllipseGeometry(new Point(x2, y2), this.StrokeThickness, this.StrokeThickness);
 
                 var gg = new GeometryGroup() { FillRule = FillRule.Nonzero};
                 gg.Children.Add(point1);
@@ -112,12 +124,11 @@ namespace Paint
 
         public void Move(double deltaX, double deltaY)
         {
-            var x1 = this.X1;
-            var x2 = this.X2;
-            var y1 = this.Y1;
-            var y2 = this.Y2;
-
             this.MoveTo(this.X1 + deltaX, this.X2 + deltaX, this.Y1 + deltaY, this.Y2 + deltaY);
+        }
+        public void Move(double deltaX, double deltaY, double deltaZ)
+        {
+            this.MoveTo(this.X1 + deltaX, this.X2 + deltaX, this.Y1 + deltaY, this.Y2 + deltaY, this.Z1 + deltaZ, this.Z2 + deltaZ);
         }
         public void MoveTo(double x1, double x2, double y1, double y2)
         {
@@ -126,10 +137,23 @@ namespace Paint
             Y1 = y1;
             Y2 = y2;
         }
+        public void MoveTo(double x1, double x2, double y1, double y2, double z1, double z2)
+        {
+            X1 = x1;
+            X2 = x2;
+            Y1 = y1;
+            Y2 = y2;
+            Z2 = z2;
+            Z2 = z2;
+        }
         public void MoveTo(Point pos1, Point pos2)
         {
             this.MoveTo(pos1.X, pos1.Y, pos2.X, pos2.Y);
-        } 
+        }
+        public void MoveTo(Point3D pos1, Point3D pos2)
+        {
+            this.MoveTo(pos1.X, pos1.Y, pos2.X, pos2.Y, pos1.Z, pos2.Z);
+        }
 
         private Equation GetEquation()
         {
@@ -148,17 +172,72 @@ namespace Paint
         public void UnSelect()
         {
             this.isSelected = false;
+            SaveNewCords();
             this.InvalidateVisual();
         }
 
-        public Tuple<Point, Point> GetSizeShape()
+        public Tuple<Point3D, Point3D> GetSizeShape()
         {
             var minX = Math.Min(X1, X2);
-            var minY = Math.Min(Y1, Y2);
             var maxX = Math.Max(X1, X2);
+            var minY = Math.Min(Y1, Y2);
             var maxY = Math.Max(Y1, Y2);
+            var minZ = Math.Min(Z1, Z2);
+            var maxZ = Math.Max(Z1, Z2);
 
-            return new Tuple<Point, Point>(new Point(minX, minY), new Point(maxX, maxY));
+            return new Tuple<Point3D, Point3D>(new Point3D(minX, minY, minZ), new Point3D(maxX, maxY, minZ));
+        }
+
+        public void ConvertByMatrix(Matrix3D matrix)
+        {
+
+            if (originalPoint1.Equals(new Point3D(int.MaxValue, int.MaxValue, int.MaxValue))
+                && originalPoint2.Equals(new Point3D(int.MaxValue, int.MaxValue, int.MaxValue))) 
+            {
+                originalPoint1 = new Point3D(X1, Y1, Z1);
+                originalPoint2 = new Point3D(X2, Y2, Z2);
+            }
+
+            X1 = originalPoint1.X;
+            Y1 = originalPoint1.Y;
+            Z1 = originalPoint1.Z;
+            X2 = originalPoint2.X;
+            Y2 = originalPoint2.Y;
+            Z2 = originalPoint2.Z;
+
+            var newX1 = X1 * matrix.M11 + Y1 * matrix.M21 + Z1 * matrix.M31 + matrix.OffsetX;
+            var newY1 = X1 * matrix.M12 + Y1 * matrix.M22 + Z1 * matrix.M32 + matrix.OffsetY;
+            var newZ1 = X1 * matrix.M13 + Y1 * matrix.M22 + Z1 * matrix.M33 + matrix.OffsetZ;
+
+            var newX2 = X2 * matrix.M11 + Y2 * matrix.M21 + Z2 * matrix.M31 + matrix.OffsetX;
+            var newY2 = X2 * matrix.M12 + Y2 * matrix.M22 + Z2 * matrix.M32 + matrix.OffsetY;
+            var newZ2 = X2 * matrix.M13 + Y2 * matrix.M22 + Z2 * matrix.M33 + matrix.OffsetZ;
+
+            X1 = newX1;
+            Y1 = newY1;
+            Z1 = newZ1;
+
+            X2 = newX2;
+            Y2 = newY2;
+            Z2 = newZ2;
+        }
+
+        public void SaveNewCords()
+        {
+            originalPoint1 = new Point3D(int.MaxValue, int.MaxValue, int.MaxValue);
+            originalPoint2 = new Point3D(int.MaxValue, int.MaxValue, int.MaxValue);
+        }
+        public void ResetOriginalCords()
+        {
+            X1 = originalPoint1.X;
+            Y1 = originalPoint1.Y;
+            Z1 = originalPoint1.Z;
+            X2 = originalPoint2.X;
+            Y2 = originalPoint2.Y;
+            Z2 = originalPoint2.Z;
+
+            originalPoint1 = new Point3D(int.MaxValue, int.MaxValue, int.MaxValue);
+            originalPoint2 = new Point3D(int.MaxValue, int.MaxValue, int.MaxValue);
         }
     }
 
@@ -192,7 +271,25 @@ namespace Paint
             string b = B >= 0 ? "+ " + B.ToString("###0.0#") : B.ToString("###0.0#");
             string c = C >= 0 ? "+ " + C.ToString("###0.0#") : C.ToString("###0.0#");
 
-            return $"{A:###0.0#}x {b}y {c}";
+            return $"{A:###0.0#}x {b}y {c} = 0";
+        }
+
+        public string ToNotRightString()
+        {
+            if (B == 0)
+            {
+                return "vertical";
+            }
+
+            double k = A/B;
+
+            double b = C/B;
+
+
+            string b_str = k >= 0 ? "+ " + k.ToString("###0.0#") : k.ToString("###0.0#");
+            string k_str = b >= 0 ? "+ " + b.ToString("###0.0#") : b.ToString("###0.0#");
+
+            return $"y = {k_str:###0.0#}x {b_str:###0.0#}";
         }
     }
 }

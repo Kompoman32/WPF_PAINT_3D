@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Media.Media3D;
 using System.Windows.Shapes;
 
 namespace Paint.classes
@@ -157,6 +158,13 @@ namespace Paint.classes
                 o.Move(deltaX, deltaY);
             }
         }
+        public void Move(double deltaX, double deltaY, double deltaZ)
+        {
+            foreach (var o in objects)
+            {
+                o.Move(deltaX, deltaY, deltaZ);
+            }
+        }
         public void MoveTo(double x1, double x2, double y1, double y2)
         {
             foreach (var o in objects)
@@ -164,9 +172,20 @@ namespace Paint.classes
                 o.MoveTo(x1, x2, y1, y2);
             }
         }
+        public void MoveTo(double x1, double x2, double y1, double y2, double z1, double z2)
+        {
+            foreach (var o in objects)
+            {
+                o.MoveTo(x1, x2, y1, y2, z1, z2);
+            }
+        }
         public void MoveTo(Point pos1, Point pos2)
         {
             this.MoveTo(pos1.X, pos1.Y, pos2.X, pos2.Y);
+        }
+        public void MoveTo(Point3D pos1, Point3D pos2)
+        {
+            this.MoveTo(pos1.X, pos1.Y, pos2.X, pos2.Y, pos1.Z, pos2.Z);
         }
 
         public void SetParent(IMyObject parent)
@@ -204,26 +223,33 @@ namespace Paint.classes
             foreach (var o in objects)
             {
                 o.UnSelect();
+                o.SaveNewCords();
             }
 
             InvalidateVisual();
             isSelected = false;
         }
 
-        public Tuple<Point, Point> GetSizeShape()
+        public Tuple<Point3D, Point3D> GetSizeShape()
+        {
+            return GetSizeShapeByArray(objects);
+        }
+        public static Tuple<Point3D, Point3D> GetSizeShapeByArray(List<IMyObject> objects)
         {
             var minX = double.MaxValue;
-            var minY = double.MaxValue;
             var maxX = double.MinValue;
+            var minY = double.MaxValue;
             var maxY = double.MinValue;
+            var minZ = double.MaxValue;
+            var maxZ = double.MinValue;
 
-            var arrays = new List<Point>(objects.Count * 2);
+            var arrays = new List<Point3D>(objects.Count * 2);
             var _ = objects.Select(x =>
             {
                 if (x == null) return false;
 
-                Point point1;
-                Point point2;
+                Point3D point1;
+                Point3D point2;
                 x.GetSizeShape().Deconstruct(out point1, out point2);
                 arrays.Add(point1);
                 arrays.Add(point2);
@@ -233,11 +259,35 @@ namespace Paint.classes
             if (arrays.Count == 0) return null;
 
             minX = arrays.Min(x => x.X);
-            minY = arrays.Min(x => x.Y);
             maxX = arrays.Max(x => x.X);
+            minY = arrays.Min(x => x.Y);
             maxY = arrays.Max(x => x.Y);
+            minZ = arrays.Min(x => x.Z);
+            maxZ = arrays.Max(x => x.Z);
 
-            return new Tuple<Point, Point>(new Point(minX, minY), new Point(maxX, maxY));
+            return new Tuple<Point3D, Point3D>(new Point3D(minX, minY, minZ), new Point3D(maxX, maxY, maxZ));
+        }
+
+        public void ConvertByMatrix(Matrix3D matrix)
+        {
+            foreach(var o in objects)
+            {
+                o.ConvertByMatrix(matrix);
+            }
+        }
+        public void SaveNewCords()
+        {
+            foreach(var o in objects)
+            {
+                o.SaveNewCords();
+            }
+        }
+        public void ResetOriginalCords()
+        {
+            foreach (var o in objects)
+            {
+                o.ResetOriginalCords();
+            }
         }
     }
 }

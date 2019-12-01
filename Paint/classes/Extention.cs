@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Shapes;
 
 namespace Paint
 {
@@ -64,7 +65,7 @@ namespace Paint
 
         public static double GetDistanceToLine(this Point point, CustomLine line)
         {
-            return ((line.X2 - line.X1)*(point.Y - line.Y1) - (line.Y2- line.Y1)*(point.X - line.X1))/Math.Sqrt(Math.Pow(line.X2 - line.X1,2) + Math.Pow(line.Y2 - line.Y1, 2));
+            return Math.Abs(((line.X2 - line.X1)*(point.Y - line.Y1) - (line.Y2- line.Y1)*(point.X - line.X1))/Math.Sqrt(Math.Pow(line.X2 - line.X1,2) + Math.Pow(line.Y2 - line.Y1, 2)));
         }
 
         public static Point GetProjectionPointOnLine(this Point point, CustomLine line)
@@ -75,13 +76,22 @@ namespace Paint
             // perpendicular line   = -Bx + Ay + C1 = 0
 
             double A = equation.A, B = equation.B, C = equation.C;
-            double D = -B, E = A, F = B * point.X - A* point.Y;
+            double D = -B, E = A, F = -D * point.X - E* point.Y;
 
             double det = A * E - B * D;
             double X = (C * E - B * F) / det;
             double Y = (A * F - C * D) / det;
 
-            return new Point(-X, -Y);
+            return new Point(-X, Y);
+        }
+
+        public static void Move(this Line line, Point point1, Point point2)
+        {
+            line.X1 = point1.X;
+            line.Y1 = point1.Y;
+
+            line.X2 = point2.X;
+            line.Y2 = point2.Y;
         }
 
         public static Point G(double A, double B, double C, double D, double E, double F)
