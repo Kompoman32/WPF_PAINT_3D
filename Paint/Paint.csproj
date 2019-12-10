@@ -24,6 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -33,6 +34,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -83,6 +85,9 @@
     <Compile Include="classes\CustomLine.cs" />
     <Compile Include="classes\Extention.cs" />
     <Compile Include="classes\Matrix.cs" />
+    <Compile Include="classes\SaveLoad\SaveLoad.cs" />
+    <Compile Include="classes\SaveLoad\Structs.cs" />
+    <Compile Include="interfaces\ILoaded.cs" />
     <Compile Include="interfaces\ISelected.cs" />
     <Compile Include="interfaces\IMyGroup.cs" />
     <Compile Include="interfaces\IMyObject.cs" />

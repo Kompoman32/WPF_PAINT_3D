@@ -11,7 +11,8 @@ using System.Windows.Shapes;
 
 namespace Paint.classes
 {
-    class CustomGroup : IMyObject, IMyGroup
+    [Serializable]
+    public class CustomGroup : IMyObject, IMyGroup
     {
         List<IMyObject> objects;
 

@@ -2,6 +2,7 @@
 using Paint.interfaces;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -38,6 +39,8 @@ namespace Paint
 
         bool isMatrixWindowOpened = false;
 
+        bool isLoading = false;
+
         #region Кнопки
 
         private void ClearLines_Click(object sender, RoutedEventArgs e)
@@ -69,8 +72,8 @@ namespace Paint
             double y2 = rnd.Next(height - CanvasMargin) - CordCenter.Y;
 
             var line = InitLine(x1, y1, x2, y2);
-            Canvas.Children.Add(line);
 
+            Canvas.Children.Add(line);
         }
 
         private void ClrPcker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
@@ -177,14 +180,81 @@ namespace Paint
 
         private void LocalCordSystem_checkbox_Click(object sender, RoutedEventArgs e)
         {
+            if (isLoading) return;
+
             isChoosingCordPostion = true;
         }
 
         private void GlobalCordSystem_checkbox_Checked(object sender, RoutedEventArgs e)
         {
+            if (isLoading) return;
+
             isChoosingCordPostion = false;
             MoveCordSystTo(new Point(0, 0));
 
+        }
+
+        private void Save_Click(object sender, RoutedEventArgs e)
+        {
+            var path = SaveLoad.Save("./MySaveGame.p3d", Canvas.Children.Cast<CustomLine>(), CordCenter, CordSystem_checkbox.IsChecked == true);
+
+            MessageBox.Show($"Путь сохранения: {System.IO.Path.GetFullPath(path)}");
+        }
+        private void Load_Click(object sender, RoutedEventArgs e)
+        {
+            isLoading = true;
+
+            var result = SaveLoad.Load("./MySaveGame.p3d");
+
+            List<CustomLine> objects = result.Item1;
+            Point center = result.Item2.Item1;
+            bool isShown = result.Item2.Item2;
+
+
+            MessageBox.Show($"Count: {objects.Count}\n" +
+                            $"Center: {{{center.X}, {center.Y}}}\n" +
+                            $"Is shown: {isShown}");
+
+            ClearLines_Click(null, null);
+
+            CordSystem_checkbox.IsChecked = false;
+            GlobalCordSystem_checkbox.IsChecked = true;
+
+            if (isShown)
+            {
+                CordSystem_checkbox.IsChecked = true;
+            }
+
+            if (center.X != 0 || center.Y != 0)
+            {
+                LocalCordSystem_checkbox.IsChecked = true;
+            }
+
+            isChoosingCordPostion = false;
+            CordSyst_Checked(null, null);
+            MoveCordSystTo(center);
+
+            foreach(var o in objects)
+            {
+                Canvas.Children.Add(o);
+
+                IMyObject parent = o;
+                while(parent.GetParent() != null)
+                {
+                    parent = parent.GetParent();
+                }
+
+                if (parent.IsSelected())
+                {
+                    if (!selectedObjects.Contains(parent))
+                        selectedObjects.Add(parent);
+                }
+
+                AddEventsOnLine(o);
+                o.InvalidateVisual();
+            }
+
+            isLoading = false;
         }
 
         #endregion Кнопки
@@ -194,20 +264,28 @@ namespace Paint
         Point lastMousePosition;
         List<IMyObject> selectedObjects = new List<IMyObject>();
 
-        private CustomLine InitLine(double x1, double y1, double x2, double y2)
+        private CustomLine InitLine(double x1, double y1, double x2, double y2, double z1 = 1, double z2 = 1)
         {
-            CustomLine line = new CustomLine()
+            CustomLine line = new CustomLine(new SolidColorBrush((Color)ColorPicker.SelectedColor))
             {
                 X1 = x1,
                 Y1 = y1,
+                Z1 = z1,
                 X2 = x2,
                 Y2 = y2,
-                Stroke = new SolidColorBrush((Color)ColorPicker.SelectedColor),
+                Z2 = z2,
                 StrokeThickness = 5,
                 originalPoint1 = new Point3D(int.MaxValue, int.MaxValue, int.MaxValue),
                 originalPoint2 = new Point3D(int.MaxValue, int.MaxValue, int.MaxValue)
             };
 
+            AddEventsOnLine(line);
+
+            return line;
+        }
+
+        private void AddEventsOnLine(CustomLine line)
+        {
             line.MouseLeftButtonDown += delegate (object s, MouseButtonEventArgs ea)
             {
                 var point = ea.GetPosition(Canvas);
@@ -233,7 +311,7 @@ namespace Paint
                 SetPointsInfo(point, line);
             };
 
-            line.PreviewMouseRightButtonUp+= delegate (object s, MouseButtonEventArgs ea)
+            line.PreviewMouseRightButtonUp += delegate (object s, MouseButtonEventArgs ea)
             {
                 var point = ea.GetPosition(Canvas);
                 point.Offset(CordCenter.X, CordCenter.Y);
@@ -242,7 +320,7 @@ namespace Paint
 
             line.MouseEnter += delegate (object s, MouseEventArgs ea)
             {
-                if (line.isSelected)
+                if (line.IsSelected())
                 {
                     Cursor = Cursors.Hand;
                 }
@@ -256,14 +334,15 @@ namespace Paint
             {
                 var position = ea.GetPosition(Canvas);
                 position.Offset(-CordCenter.X, -CordCenter.Y);
-                if (line.isSelected)
+                if (line.IsSelected())
                 {
 
                     if (Math.Abs(position.X - line.X1) < line.StrokeThickness * 4 + 8 && Math.Abs(position.Y - line.Y1) < line.StrokeThickness * 4 + 8
                     || Math.Abs(position.X - line.X2) < line.StrokeThickness * 4 + 8 && Math.Abs(position.Y - line.Y2) < line.StrokeThickness * 4 + 8)
                     {
                         Cursor = Cursors.SizeAll;
-                    } else
+                    }
+                    else
                     {
                         Cursor = Cursors.Hand;
                     }
@@ -274,12 +353,10 @@ namespace Paint
             {
                 Cursor = Cursors.Arrow;
             };
-            line.MouseUp += delegate(object s, MouseButtonEventArgs ea)
+            line.MouseUp += delegate (object s, MouseButtonEventArgs ea)
             {
                 Cursor = Cursors.Arrow;
             };
-
-            return line;
         }
 
         private void SelectLine_Handler(CustomLine line, MouseButtonEventArgs ea)
@@ -322,7 +399,7 @@ namespace Paint
 
         private void ChoosePoint_handler(CustomLine line, Point position)
         {
-            if (line.isSelected)
+            if (line.IsSelected())
             {
                 line.IsPressed_Point_1 = false;
                 line.IsPressed_Point_2 = false;
@@ -342,6 +419,9 @@ namespace Paint
 
         private void DivideLine_Click(CustomLine line, MouseButtonEventArgs e)
         {
+            //wont work due to Z cord;
+            return;
+            
             if (selectedObjects.Count != 1 ) return;
 
             var selectedLine = selectedObjects.FirstOrDefault();
@@ -433,6 +513,7 @@ namespace Paint
                     var line = c as Line;
 
                     line.Move(new Point(line.X1 + deltaX, line.Y1 + deltaY), new Point(line.X2 + deltaX, line.Y2 + deltaY));
+                    line.InvalidateVisual();
                 }
                 else
                 {
@@ -450,6 +531,8 @@ namespace Paint
                 }
             }
             CordCenter = point;
+
+            if (isLoading) return;
 
             foreach(var o in Canvas.Children.Cast<IMyObject>())
             {

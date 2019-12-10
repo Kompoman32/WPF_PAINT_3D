@@ -5,6 +5,7 @@ using System.Windows.Media.Media3D;
 
 namespace Paint.interfaces
 {
+
     public interface IMyObject: ISelected
     {
         void CacheDefiningGeometry();

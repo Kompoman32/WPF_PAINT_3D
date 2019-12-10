@@ -14,22 +14,28 @@ namespace Paint
 {
     public class CustomLine : CustomLine_Base, IMyObject
     {
-        public CustomLine() : base()
+        private CustomLine() : base()
         {
+            CacheDefiningGeometry();
+        }
+
+        public CustomLine(Brush brush) : base()
+        {
+            this.Stroke = brush;
             CacheDefiningGeometry();
         }
 
 
         public bool IsPressed_Point_1 = false;
         public bool IsPressed_Point_2 = false;
-        public bool IsNotEntered = true;
-        public bool isSelected = false;
+        private bool isSelected = false;
 
         Brush brush;
+        public Brush OriginalBrush => brush;
         Brush selectedBrush;
 
-        double Z1;
-        double Z2;
+        public double Z1;
+        public double Z2;
 
         public Point3D originalPoint1;
         public Point3D originalPoint2;
