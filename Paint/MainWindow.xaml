@@ -52,6 +52,7 @@
                 </WrapPanel>
             </Grid>
         </Grid>
+
         <StackPanel Orientation="Vertical" x:Name="PointInfo" Background="LightGray" Visibility="Hidden" Width="190" Height="30" HorizontalAlignment="Left" VerticalAlignment="Top" PreviewMouseRightButtonDown="Canvas_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="Canvas_PreviewMouseRightButtonUp">
             <TextBlock x:Name="PointInfo_Point" />
             <TextBlock x:Name="PointInfo_Line" />

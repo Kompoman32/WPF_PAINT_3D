@@ -1,4 +1,5 @@
-﻿using Paint.classes;
+﻿using Microsoft.Win32;
+using Paint.classes;
 using Paint.interfaces;
 using System;
 using System.Collections.Generic;
@@ -33,13 +34,11 @@ namespace Paint
         static Random rnd = new Random();
 
         public static int CanvasMargin = 10;
-        public static Point CordCenter = new Point(0,0);
 
         Matrix_Window matrixWindow;
 
         bool isMatrixWindowOpened = false;
 
-        bool isLoading = false;
 
         #region Кнопки
 
@@ -194,75 +193,118 @@ namespace Paint
 
         }
 
+        bool isLoading = false;
+
         private void Save_Click(object sender, RoutedEventArgs e)
         {
-            var path = SaveLoad.Save("./MySaveGame.p3d", Canvas.Children.Cast<CustomLine>(), CordCenter, CordSystem_checkbox.IsChecked == true);
+            Save();
+        }
 
-            MessageBox.Show($"Путь сохранения: {System.IO.Path.GetFullPath(path)}");
+        private bool? Save() {
+            var saveDialog = new SaveFileDialog()
+            {
+                DefaultExt = "p3d",
+                AddExtension = true,
+                Filter = "Проект рисунка (*.p3d)|*.p3d",
+                FileName = "MySaveGame.p3d",
+                CheckPathExists = true,
+                Title = "Сохранить проект",
+            };
+            var ok = saveDialog.ShowDialog();
+            if (ok == true)
+            {
+                var path = SaveLoad.Save(saveDialog.FileName, Canvas.Children.Cast<CustomLine>(), CordCenter, CordSystem_checkbox.IsChecked == true);
+
+                MessageBox.Show($"Путь сохранения: {System.IO.Path.GetFullPath(path)}");
+            }
+
+            return ok;
         }
         private void Load_Click(object sender, RoutedEventArgs e)
         {
-            isLoading = true;
-
-            var result = SaveLoad.Load("./MySaveGame.p3d");
-
-            List<CustomLine> objects = result.Item1;
-            Point center = result.Item2.Item1;
-            bool isShown = result.Item2.Item2;
-
-
-            MessageBox.Show($"Count: {objects.Count}\n" +
-                            $"Center: {{{center.X}, {center.Y}}}\n" +
-                            $"Is shown: {isShown}");
-
-            ClearLines_Click(null, null);
-
-            CordSystem_checkbox.IsChecked = false;
-            GlobalCordSystem_checkbox.IsChecked = true;
-
-            if (isShown)
+            var openDialog = new OpenFileDialog()
             {
-                CordSystem_checkbox.IsChecked = true;
-            }
+                DefaultExt = "p3d",
+                AddExtension = true,
+                Filter = "Проект рисунка (*.p3d)|*.p3d",
+                CheckPathExists = true,
+                CheckFileExists = true,
+                Title = "Загрузить проект",
+            };
 
-            if (center.X != 0 || center.Y != 0)
+            var ok = openDialog.ShowDialog();
+
+            if (ok == true)
             {
-                LocalCordSystem_checkbox.IsChecked = true;
-            }
-
-            isChoosingCordPostion = false;
-            CordSyst_Checked(null, null);
-            MoveCordSystTo(center);
-
-            foreach(var o in objects)
-            {
-                Canvas.Children.Add(o);
-
-                IMyObject parent = o;
-                while(parent.GetParent() != null)
+                if (openDialog.FileName.Substring(openDialog.FileName.LastIndexOf('.')) != ".p3d")
                 {
-                    parent = parent.GetParent();
+                    MessageBox.Show("Расширение файла не верное!");
+                    return;
                 }
 
-                if (parent.IsSelected())
+                isLoading = true;
+
+                var result = SaveLoad.Load(openDialog.FileName);
+
+                List<CustomLine> objects = result.Item1;
+                Point center = result.Item2.Item1;
+                bool isShown = result.Item2.Item2;
+
+
+                //MessageBox.Show($"Count: {objects.Count}\n" +
+                //                $"Center: {{{center.X}, {center.Y}}}\n" +
+                //                $"Is shown: {isShown}");
+
+                ClearLines_Click(null, null);
+
+                CordSystem_checkbox.IsChecked = false;
+                GlobalCordSystem_checkbox.IsChecked = true;
+
+                if (isShown)
                 {
-                    if (!selectedObjects.Contains(parent))
-                        selectedObjects.Add(parent);
+                    CordSystem_checkbox.IsChecked = true;
                 }
 
-                AddEventsOnLine(o);
-                o.InvalidateVisual();
-            }
+                if (center.X != 0 || center.Y != 0)
+                {
+                    LocalCordSystem_checkbox.IsChecked = true;
+                }
 
-            isLoading = false;
+                isChoosingCordPostion = false;
+                CordSyst_Checked(null, null);
+                MoveCordSystTo(center);
+
+                foreach (var o in objects)
+                {
+                    Canvas.Children.Add(o);
+
+                    IMyObject parent = o;
+                    while (parent.GetParent() != null)
+                    {
+                        parent = parent.GetParent();
+                    }
+
+                    if (parent.IsSelected())
+                    {
+                        if (!selectedObjects.Contains(parent))
+                            selectedObjects.Add(parent);
+                    }
+
+                    AddEventsOnLine(o);
+                    o.InvalidateVisual();
+                }
+
+                isLoading = false;
+            }
         }
 
         #endregion Кнопки
 
-        #region Объекты
+        #region Lines
 
         Point lastMousePosition;
         List<IMyObject> selectedObjects = new List<IMyObject>();
+
 
         private CustomLine InitLine(double x1, double y1, double x2, double y2, double z1 = 1, double z2 = 1)
         {
@@ -456,6 +498,12 @@ namespace Paint
             }
         }
 
+        #endregion Lines
+
+        #region Cords
+
+        public static Point CordCenter = new Point(0, 0);
+
         private void SaveCordOfObjects()
         {
             foreach (var o in selectedObjects)
@@ -540,7 +588,7 @@ namespace Paint
             }
         }
 
-        #endregion Объекты
+        #endregion Cords
 
         #region INFO
         private void SetPointsInfo(Point position, CustomLine line)
@@ -671,6 +719,32 @@ namespace Paint
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            var answer = MessageBox.Show("Желаете сохранить?", "Выход", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+
+            bool ok;
+
+            if (answer == MessageBoxResult.Yes)
+            {
+                ok = Save() == true;
+            } else
+            {
+                if (answer == MessageBoxResult.No)
+                {
+                    ok = true;
+                }
+                else
+                {
+                    ok = false;
+                }
+            }
+
+            e.Cancel = !ok;
+
+            if (!ok)
+            {
+                return;
+            }
+
             if (matrixWindow != null)
             {
                 matrixWindow.Close();
