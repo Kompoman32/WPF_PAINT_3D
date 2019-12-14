@@ -27,9 +27,20 @@ namespace Paint
     {
         public MainWindow()
         {
+            CustomLine.DisplayProjectionMatrix =
+                new Matrix3D(1, 0, 0, 0,
+                             0, 1, 0, 0,
+                             0, 0, 1, 0.001,
+                             0, 0, 0, 1);
+
+            this.infoWindow = new Info();
+            this.infoWindow.Show();
+
             InitializeComponent();
             GenerateCordSyst();
         }
+
+        Info infoWindow;
 
         static Random rnd = new Random();
 
@@ -38,7 +49,6 @@ namespace Paint
         Matrix_Window matrixWindow;
 
         bool isMatrixWindowOpened = false;
-
 
         #region Кнопки
 
@@ -66,11 +76,13 @@ namespace Paint
 
             double x1 = rnd.Next(width - CanvasMargin) - CordCenter.X;
             double y1 = rnd.Next(height - CanvasMargin) - CordCenter.Y;
+            double z1 = rnd.NextDouble() * 2;
 
             double x2 = rnd.Next(width - CanvasMargin) - CordCenter.X;
             double y2 = rnd.Next(height - CanvasMargin) - CordCenter.Y;
+            double z2 = rnd.NextDouble()*2;
 
-            var line = InitLine(x1, y1, x2, y2);
+            var line = InitLine(x1, y1, x2, y2, z1, z2);
 
             Canvas.Children.Add(line);
         }
@@ -85,7 +97,7 @@ namespace Paint
 
         private void RemoveObject_Click(object sender, RoutedEventArgs e)
         {
-            foreach(var o in selectedObjects)
+            foreach(var o in selectedObjects.ToList())
             {
                 if (o is IMyGroup)
                 {
@@ -106,6 +118,10 @@ namespace Paint
 
         private void GroupSelected_Click(object sender, RoutedEventArgs e)
         {
+            var line = Canvas.Children.Cast<IMyObject>().FirstOrDefault(x => x is CustomLine) as CustomLine;
+
+            MessageBox.Show($"({line.X1};{line.Y1})\n{line.X2};{line.Y2})");
+
             if (selectedObjects.Count <= 1) return;
 
             var group = new CustomGroup(selectedObjects);
@@ -326,6 +342,8 @@ namespace Paint
             return line;
         }
 
+        CustomLine onLine;
+
         private void AddEventsOnLine(CustomLine line)
         {
             line.MouseLeftButtonDown += delegate (object s, MouseButtonEventArgs ea)
@@ -357,7 +375,6 @@ namespace Paint
             {
                 var point = ea.GetPosition(Canvas);
                 point.Offset(CordCenter.X, CordCenter.Y);
-                ShowInfo(ea.GetPosition(Canvas));
             };
 
             line.MouseEnter += delegate (object s, MouseEventArgs ea)
@@ -374,13 +391,15 @@ namespace Paint
             };
             line.MouseMove += delegate (object s, MouseEventArgs ea)
             {
+                onLine = line;
+                SetPointsInfo(ea.GetPosition(Canvas), line);
                 var position = ea.GetPosition(Canvas);
                 position.Offset(-CordCenter.X, -CordCenter.Y);
                 if (line.IsSelected())
                 {
 
-                    if (Math.Abs(position.X - line.X1) < line.StrokeThickness * 4 + 8 && Math.Abs(position.Y - line.Y1) < line.StrokeThickness * 4 + 8
-                    || Math.Abs(position.X - line.X2) < line.StrokeThickness * 4 + 8 && Math.Abs(position.Y - line.Y2) < line.StrokeThickness * 4 + 8)
+                    if (Math.Abs(position.X - line.X1) < line.StrokeThickness * 2 && Math.Abs(position.Y - line.Y1) < line.StrokeThickness * 2
+                    || Math.Abs(position.X - line.X2) < line.StrokeThickness * 2 && Math.Abs(position.Y - line.Y2) < line.StrokeThickness * 2)
                     {
                         Cursor = Cursors.SizeAll;
                     }
@@ -393,6 +412,7 @@ namespace Paint
             };
             line.MouseLeave += delegate (object s, MouseEventArgs ea)
             {
+                onLine = null;
                 Cursor = Cursors.Arrow;
             };
             line.MouseUp += delegate (object s, MouseButtonEventArgs ea)
@@ -593,15 +613,25 @@ namespace Paint
         #region INFO
         private void SetPointsInfo(Point position, CustomLine line)
         {
-            PointInfo_Point.Text = "";
-
-            //var realpoint = position.GetProjectionPointOnLine(line);
-            //if (position.IsOnTheLine(line))
+            if (line == null)
             {
-                PointInfo_Line.Text = "line: " + line.Equation.ToString();
-                PointInfo_Line.Text = "line: " + line.Equation.ToNotRightString();
+                infoWindow.SetPointOnLine(new Point(0,0));
             }
-            PointInfo_Point.Text = $"X:{position.X:###0.0#} Y:{position.Y:###0.0#}";
+             else
+            {
+                var realpoint = position.GetProjectionPointOnLine(line);
+
+                infoWindow.SetPointOnLine(realpoint);
+            }
+            //PointInfo_Point.Text = "";
+
+            
+            ////if (position.IsOnTheLine(line))
+            //{
+            //    PointInfo_Line.Text = "line: " + line.Equation.ToString();
+            //    PointInfo_Line.Text = "line: " + line.Equation.ToNotRightString();
+            //}
+            //PointInfo_Point.Text = $"X:{position.X:###0.0#} Y:{position.Y:###0.0#}";
         }
 
         private void ShowInfo(Point position)
@@ -633,6 +663,14 @@ namespace Paint
 
         private void Canvas_MouseMove(object sender, MouseEventArgs e)
         {
+            var pos = e.GetPosition(Canvas);
+            pos.Offset(-CordCenter.X, -CordCenter.Y);
+
+
+            infoWindow.SetPoint(pos);
+            infoWindow.SetObjects(selectedObjects);
+            SetPointsInfo(pos, onLine);
+
             if (e.LeftButton == MouseButtonState.Pressed)
             {
                 if (isChoosingCordPostion)
@@ -713,7 +751,7 @@ namespace Paint
             {
                 e.Handled = true;
             }
-            ShowInfo(e.GetPosition(Canvas));
+            //ShowInfo(e.GetPosition(Canvas));
         }
 
 
@@ -749,6 +787,7 @@ namespace Paint
             {
                 matrixWindow.Close();
             }
+            infoWindow.CloseThis();
         }
     }
 }

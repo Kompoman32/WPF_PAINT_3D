@@ -30,12 +30,25 @@ namespace Paint
         public bool IsPressed_Point_2 = false;
         private bool isSelected = false;
 
+        public bool isOnLine = true;
+
         Brush brush;
         public Brush OriginalBrush => brush;
         Brush selectedBrush;
 
-        public double Z1;
-        public double Z2;
+        public double z1;
+        public double Z1 {
+            get { return z1; }
+            set { z1 = value; InvalidateVisual(); }
+        }
+        public double z2;
+        public double Z2
+        {
+            get { return z2; }
+            set { z2 = value; InvalidateVisual(); }
+        }
+
+        public static Matrix3D DisplayProjectionMatrix;
 
         public Point3D originalPoint1;
         public Point3D originalPoint2;
@@ -103,6 +116,14 @@ namespace Paint
             var x2 = this.X2 + MainWindow.CordCenter.X;
             var y1 = this.Y1 + MainWindow.CordCenter.Y;
             var y2 = this.Y2 + MainWindow.CordCenter.Y;
+
+            var first = DisplayProjectionMatrix.Transform(new Point3D(x1, y1, Z1));
+            var second = DisplayProjectionMatrix.Transform(new Point3D(x2, y2, Z2));
+
+            x1 = first.X;
+            x2 = second.X;
+            y1 = first.Y;
+            y2 = second.Y;
 
             var line = new LineGeometry(new Point(x1, y1), new Point(x2, y2));
 
@@ -204,28 +225,33 @@ namespace Paint
                 originalPoint2 = new Point3D(X2, Y2, Z2);
             }
 
-            X1 = originalPoint1.X;
-            Y1 = originalPoint1.Y;
-            Z1 = originalPoint1.Z;
-            X2 = originalPoint2.X;
-            Y2 = originalPoint2.Y;
-            Z2 = originalPoint2.Z;
+            var first = matrix.Transform(new Point3D(originalPoint1.X, originalPoint1.Y, originalPoint1.Z));
+            var second = matrix.Transform(new Point3D(originalPoint2.X, originalPoint2.Y, originalPoint2.Z));
 
-            var newX1 = X1 * matrix.M11 + Y1 * matrix.M21 + Z1 * matrix.M31 + matrix.OffsetX;
-            var newY1 = X1 * matrix.M12 + Y1 * matrix.M22 + Z1 * matrix.M32 + matrix.OffsetY;
-            var newZ1 = X1 * matrix.M13 + Y1 * matrix.M22 + Z1 * matrix.M33 + matrix.OffsetZ;
+            X1 = first.X;
+            Y1 = first.Y;
+            Z1 = first.Z;
+            X2 = second.X;
+            Y2 = second.Y;
+            Z2 = second.Z;
 
-            var newX2 = X2 * matrix.M11 + Y2 * matrix.M21 + Z2 * matrix.M31 + matrix.OffsetX;
-            var newY2 = X2 * matrix.M12 + Y2 * matrix.M22 + Z2 * matrix.M32 + matrix.OffsetY;
-            var newZ2 = X2 * matrix.M13 + Y2 * matrix.M22 + Z2 * matrix.M33 + matrix.OffsetZ;
 
-            X1 = newX1;
-            Y1 = newY1;
-            Z1 = newZ1;
 
-            X2 = newX2;
-            Y2 = newY2;
-            Z2 = newZ2;
+            //var newX1 = X1 * matrix.M11 + Y1 * matrix.M21 + Z1 * matrix.M31 + matrix.OffsetX;
+            //var newY1 = X1 * matrix.M12 + Y1 * matrix.M22 + Z1 * matrix.M32 + matrix.OffsetY;
+            //var newZ1 = X1 * matrix.M13 + Y1 * matrix.M22 + Z1 * matrix.M33 + matrix.OffsetZ;
+
+            //var newX2 = X2 * matrix.M11 + Y2 * matrix.M21 + Z2 * matrix.M31 + matrix.OffsetX;
+            //var newY2 = X2 * matrix.M12 + Y2 * matrix.M22 + Z2 * matrix.M32 + matrix.OffsetY;
+            //var newZ2 = X2 * matrix.M13 + Y2 * matrix.M22 + Z2 * matrix.M33 + matrix.OffsetZ;
+
+            //X1 = newX1;
+            //Y1 = newY1;
+            //Z1 = newZ1;
+
+            //X2 = newX2;
+            //Y2 = newY2;
+            //Z2 = newZ2;
         }
 
         public void SaveNewCords()
@@ -235,6 +261,12 @@ namespace Paint
         }
         public void ResetOriginalCords()
         {
+            if (originalPoint1.Equals(new Point3D(int.MaxValue, int.MaxValue, int.MaxValue))
+                && originalPoint2.Equals(new Point3D(int.MaxValue, int.MaxValue, int.MaxValue)))
+            {
+                return;
+            }
+
             X1 = originalPoint1.X;
             Y1 = originalPoint1.Y;
             Z1 = originalPoint1.Z;

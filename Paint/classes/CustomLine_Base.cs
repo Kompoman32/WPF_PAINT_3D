@@ -57,7 +57,14 @@ namespace Paint
             }
             set
             {
-                this.SetValue(CustomLine_Base.X1Property, (object)value);
+                if (double.IsInfinity(value))
+                {
+                    this.SetValue(CustomLine_Base.X1Property, double.IsPositiveInfinity(value)? double.MaxValue : double.MinValue);
+                }
+                else
+                {
+                    this.SetValue(CustomLine_Base.X1Property, (object)value);
+                }
                 CacheDefiningGeometry();
             }
         }
@@ -78,7 +85,14 @@ namespace Paint
             }
             set
             {
-                this.SetValue(CustomLine_Base.Y1Property, (object)value);
+                if (double.IsInfinity(value))
+                {
+                    this.SetValue(CustomLine_Base.Y1Property, double.IsPositiveInfinity(value) ? double.MaxValue : double.MinValue);
+                }
+                else
+                {
+                    this.SetValue(CustomLine_Base.Y1Property, (object)value);
+                }
                 CacheDefiningGeometry();
             }
         }
@@ -99,7 +113,14 @@ namespace Paint
             }
             set
             {
-                this.SetValue(CustomLine_Base.X2Property, (object)value);
+                if (double.IsInfinity(value))
+                {
+                    this.SetValue(CustomLine_Base.X2Property, double.IsPositiveInfinity(value) ? double.MaxValue : double.MinValue);
+                }
+                else
+                {
+                    this.SetValue(CustomLine_Base.X2Property, (object)value);
+                }
                 CacheDefiningGeometry();
             }
         }
@@ -120,7 +141,14 @@ namespace Paint
             }
             set
             {
-                this.SetValue(CustomLine_Base.Y2Property, (object)value);
+                if (double.IsInfinity(value))
+                {
+                    this.SetValue(CustomLine_Base.Y2Property, double.IsPositiveInfinity(value) ? double.MaxValue : double.MinValue);
+                }
+                else
+                {
+                    this.SetValue(CustomLine_Base.Y2Property, (object)value);
+                }
                 CacheDefiningGeometry();
             }
         }

@@ -82,7 +82,7 @@ namespace Paint
             double X = (C * E - B * F) / det;
             double Y = (A * F - C * D) / det;
 
-            return new Point(-X, Y);
+            return new Point(-X, -Y);
         }
 
         public static void Move(this Line line, Point point1, Point point2)
