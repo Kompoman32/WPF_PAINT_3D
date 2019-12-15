@@ -112,18 +112,18 @@ namespace Paint
 
         public override void CacheDefiningGeometry()
         {
-            var x1 = this.X1 + MainWindow.CordCenter.X;
-            var x2 = this.X2 + MainWindow.CordCenter.X;
-            var y1 = this.Y1 + MainWindow.CordCenter.Y;
-            var y2 = this.Y2 + MainWindow.CordCenter.Y;
+            var x1 = this.X1;//+ MainWindow.CordCenter.X;
+            var x2 = this.X2;//+ MainWindow.CordCenter.X;
+            var y1 = this.Y1;//+ MainWindow.CordCenter.Y;
+            var y2 = this.Y2;//+ MainWindow.CordCenter.Y;
 
             var first = DisplayProjectionMatrix.Transform(new Point3D(x1, y1, Z1));
             var second = DisplayProjectionMatrix.Transform(new Point3D(x2, y2, Z2));
 
-            x1 = first.X;
-            x2 = second.X;
-            y1 = first.Y;
-            y2 = second.Y;
+            x1 = first.X + MainWindow.CordCenter.X;
+            x2 = second.X + MainWindow.CordCenter.X;
+            y1 = first.Y+ MainWindow.CordCenter.Y;
+            y2 = second.Y + MainWindow.CordCenter.Y;
 
             var line = new LineGeometry(new Point(x1, y1), new Point(x2, y2));
 
@@ -149,9 +149,46 @@ namespace Paint
             this.Stroke = null;
         }
 
+        public bool IsNearToPoint1(Point point)
+        {
+            return IsNearToPoint(point, X1, Y1, Z1);
+        }
+        public bool IsNearToPoint2(Point point)
+        {
+            return IsNearToPoint(point, X2, Y2, Z2);
+        }
+        private bool IsNearToPoint(Point point, double x, double y, double z)
+        {
+            Point3D p = new Point3D(x, y, z);
+
+            var linePoint = CustomLine.DisplayProjectionMatrix.Transform(p);
+
+            var x_ = linePoint.X;
+            var y_ = linePoint.Y;
+
+            return Math.Abs(point.X - x_) < StrokeThickness * 4 + 8 && Math.Abs(point.Y - y_) < StrokeThickness * 4 + 8;
+        }
+
+
         public void Move(double deltaX, double deltaY)
         {
-            this.MoveTo(this.X1 + deltaX, this.X2 + deltaX, this.Y1 + deltaY, this.Y2 + deltaY);
+            var x1 = X1;
+            var y1 = Y1;
+            var x2 = X2;
+            var y2 = Y2;
+
+            //Point3D p1 = new Point3D(this.X1, this.Y1, Z1);
+            //Point3D p2 = new Point3D(this.X2, this.Y2, Z1);
+
+            //var first = CustomLine.DisplayProjectionMatrix.Transform(p1);
+            //var second = CustomLine.DisplayProjectionMatrix.Transform(p2);
+
+            //x1 = first.X;
+            //y1 = first.Y;
+            //x2 = second.X;
+            //y2 = second.Y;
+
+            this.MoveTo(x1 + deltaX, x2 + deltaX, y1 + deltaY, y2 + deltaY);
         }
         public void Move(double deltaX, double deltaY, double deltaZ)
         {

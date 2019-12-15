@@ -53,9 +53,13 @@
             </Grid>
         </Grid>
 
-        <StackPanel Orientation="Vertical" x:Name="PointInfo" Background="LightGray" Visibility="Hidden" Width="190" Height="30" HorizontalAlignment="Left" VerticalAlignment="Top" PreviewMouseRightButtonDown="Canvas_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="Canvas_PreviewMouseRightButtonUp">
-            <TextBlock x:Name="PointInfo_Point" />
+        <StackPanel Margin="50" Orientation="Vertical" x:Name="PointInfo"  Background="LightGray" Visibility="Hidden" HorizontalAlignment="Left" VerticalAlignment="Top" PreviewMouseRightButtonDown="Canvas_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="Canvas_PreviewMouseRightButtonUp">
+            <TextBlock x:Name="PointInfo_Point" >GeE</TextBlock>
             <TextBlock x:Name="PointInfo_Line" />
+            <StackPanel x:Name="ZPoint_Panel" Orientation="Horizontal">
+                <TextBlock Foreground="Black">Z:</TextBlock>
+                <TextBox x:Name="ZPoint" Width="80" Height="20" FontSize="12" Margin="5 0 5 10" Text="16" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" />
+            </StackPanel>
         </StackPanel>
     </Grid>
 </Window>

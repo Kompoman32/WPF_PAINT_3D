@@ -30,7 +30,7 @@ namespace Paint
             CustomLine.DisplayProjectionMatrix =
                 new Matrix3D(1, 0, 0, 0,
                              0, 1, 0, 0,
-                             0, 0, 1, 0.001,
+                             0, 0, 1, 0.00,
                              0, 0, 0, 1);
 
             this.infoWindow = new Info();
@@ -321,6 +321,7 @@ namespace Paint
         Point lastMousePosition;
         List<IMyObject> selectedObjects = new List<IMyObject>();
 
+        CustomLine onLine;
 
         private CustomLine InitLine(double x1, double y1, double x2, double y2, double z1 = 1, double z2 = 1)
         {
@@ -341,8 +342,6 @@ namespace Paint
 
             return line;
         }
-
-        CustomLine onLine;
 
         private void AddEventsOnLine(CustomLine line)
         {
@@ -368,6 +367,10 @@ namespace Paint
             {
                 var point = ea.GetPosition(Canvas);
                 point.Offset(-CordCenter.X, -CordCenter.Y);
+                if (line.GetParent() == null)
+                {
+                    ChoosePoint_handler(line, point);
+                }
                 SetPointsInfo(point, line);
             };
 
@@ -391,6 +394,12 @@ namespace Paint
             };
             line.MouseMove += delegate (object s, MouseEventArgs ea)
             {
+                if (ea.LeftButton != MouseButtonState.Pressed)
+                {
+                    line.IsPressed_Point_1 = false;
+                    line.IsPressed_Point_2 = false;
+                }
+
                 onLine = line;
                 SetPointsInfo(ea.GetPosition(Canvas), line);
                 var position = ea.GetPosition(Canvas);
@@ -398,8 +407,7 @@ namespace Paint
                 if (line.IsSelected())
                 {
 
-                    if (Math.Abs(position.X - line.X1) < line.StrokeThickness * 2 && Math.Abs(position.Y - line.Y1) < line.StrokeThickness * 2
-                    || Math.Abs(position.X - line.X2) < line.StrokeThickness * 2 && Math.Abs(position.Y - line.Y2) < line.StrokeThickness * 2)
+                    if (line.IsNearToPoint1(position) || line.IsNearToPoint2(position))
                     {
                         Cursor = Cursors.SizeAll;
                     }
@@ -459,23 +467,23 @@ namespace Paint
             }
         }
 
-        private void ChoosePoint_handler(CustomLine line, Point position)
+        private void ChoosePoint_handler(CustomLine line, Point point)
         {
             if (line.IsSelected())
             {
                 line.IsPressed_Point_1 = false;
                 line.IsPressed_Point_2 = false;
 
-                if (Math.Abs(position.X - line.X1) < line.StrokeThickness * 4 + 8 && Math.Abs(position.Y - line.Y1) < line.StrokeThickness * 4 + 8)
+                if (line.IsNearToPoint1(point))
                 {
                     line.IsPressed_Point_1 = true;
                 }
-                else if (Math.Abs(position.X - line.X2) < line.StrokeThickness * 4 + 8 && Math.Abs(position.Y - line.Y2) < line.StrokeThickness * 4 + 8)
+                else if (line.IsNearToPoint2(point))
                 {
                     line.IsPressed_Point_2 = true;
                 }
 
-                lastMousePosition = position;
+                lastMousePosition = point;
             }
         }
 
@@ -611,11 +619,22 @@ namespace Paint
         #endregion Cords
 
         #region INFO
+
+        CustomLine ZPointLine;
+
         private void SetPointsInfo(Point position, CustomLine line)
         {
+            PointInfo_Point.Text = "";
+            PointInfo_Line.Text = "";
+            ZPoint_Panel.Visibility = Visibility.Hidden;
+            ZPointLine = null;
+
+            PointInfo_Point.Text = $"X:{position.X:###0.0#} Y:{position.Y:###0.0#}";
+
             if (line == null)
             {
                 infoWindow.SetPointOnLine(new Point(0,0));
+                return;
             }
              else
             {
@@ -623,15 +642,20 @@ namespace Paint
 
                 infoWindow.SetPointOnLine(realpoint);
             }
-            //PointInfo_Point.Text = "";
 
-            
-            ////if (position.IsOnTheLine(line))
-            //{
-            //    PointInfo_Line.Text = "line: " + line.Equation.ToString();
-            //    PointInfo_Line.Text = "line: " + line.Equation.ToNotRightString();
-            //}
-            //PointInfo_Point.Text = $"X:{position.X:###0.0#} Y:{position.Y:###0.0#}";
+            if (position.IsOnTheLine(line))
+            {
+                PointInfo_Line.Text = "line: " + line.Equation.ToString();
+                //PointInfo_Line.Text = "line: " + line.Equation.ToNotRightString();
+            }
+            PointInfo_Point.Text = $"X:{position.X:###0.0#} Y:{position.Y:###0.0#}";
+
+            if (line.IsPressed_Point_1 || line.IsPressed_Point_2)
+            {
+                ZPointLine = line;
+                ZPoint.Text = (line.IsPressed_Point_1 ? line.Z1 : line.Z2).ToString("###0.0#");
+                ZPoint_Panel.Visibility = Visibility.Visible;
+            }
         }
 
         private void ShowInfo(Point position)
@@ -657,6 +681,121 @@ namespace Paint
         private void HideInfo()
         {
             PointInfo.Visibility = Visibility.Hidden;
+            PointInfo_Line.Text = "";
+            PointInfo_Point.Text = "";
+            ZPoint_Panel.Visibility = Visibility.Hidden;
+        }
+
+        private void TextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            var textbox = sender as TextBox;
+
+            var available = new List<Key>()
+            {
+                Key.D0,
+                Key.D1,
+                Key.D2,
+                Key.D3,
+                Key.D4,
+                Key.D5,
+                Key.D6,
+                Key.D7,
+                Key.D8,
+                Key.D9,
+
+                Key.NumPad0,
+                Key.NumPad1,
+                Key.NumPad2,
+                Key.NumPad3,
+                Key.NumPad4,
+                Key.NumPad5,
+                Key.NumPad6,
+                Key.NumPad7,
+                Key.NumPad8,
+                Key.NumPad9,
+
+                Key.OemMinus,
+                Key.Subtract,
+                Key.OemPeriod,
+                Key.Decimal,
+
+                Key.Delete,
+                Key.Back,
+                Key.Left,
+                Key.Right,
+                Key.Home,
+                Key.End,
+            };
+
+
+            if (available.Contains(e.Key))
+            {
+                if ((e.Key == Key.OemMinus || e.Key == Key.Subtract) && (textbox.Text.Contains('-') || textbox.CaretIndex > 0)
+                    || (e.Key == Key.OemPeriod || e.Key == Key.Decimal) && (textbox.Text.Contains(",") || textbox.Text.Contains(".")))
+                {
+                    e.Handled = true;
+                }
+            }
+            else
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var textbox = sender as TextBox;
+
+            var index = textbox.CaretIndex;
+            if (textbox.Text.Contains("-."))
+            {
+                textbox.Text = textbox.Text.Replace("-.", "-0.");
+                textbox.CaretIndex = index + 1;
+            }
+
+            if (ZPointLine != null)
+            {
+                var z = ConvertToDouble(textbox.Text);
+                if (ZPointLine.IsPressed_Point_1)
+                {
+                    ZPointLine.Z1 = z;
+                }
+
+                if (ZPointLine.IsPressed_Point_2)
+                {
+                    ZPointLine.Z2 = z;
+                }
+            }
+        }
+
+        public void TextBox_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            var textbox = sender as TextBox;
+
+            var text = textbox.Text;
+
+            double val = ConvertToDouble(text);
+            val += e.Delta > 0 ? 0.1 : -0.1;
+
+            textbox.Text = val.ToString();
+        }
+
+        static double ConvertToDouble(string str)
+        {
+            str = str.Replace(".", ",");
+            if (str == "-" || str == "-0," || str == "," || str == "")
+            {
+                str = "0";
+            }
+            else
+            {
+                if (str.LastIndexOf(",") == str.Length - 1)
+                {
+                    str = str.Replace(",", "");
+                }
+            }
+            double.TryParse(str, out double val);
+            return val;
         }
 
         #endregion INFO
@@ -682,34 +821,44 @@ namespace Paint
 
                 var position = e.GetPosition(Canvas);
 
+                var xd = position.X - lastMousePosition.X;
+                var yd = position.Y - lastMousePosition.Y;
+
                 foreach (var o in selectedObjects)
                 {
                     if (o is CustomLine)
                     {
                         var line = o as CustomLine;
-                        if (line.IsPressed_Point_1 && selectedObjects.Count == 1)
+                        if (selectedObjects.Count == 1 && (line.IsPressed_Point_1 || line.IsPressed_Point_2))
                         {
-                            line.X1 = position.X - CordCenter.X;
-                            line.Y1 = position.Y - CordCenter.Y;
+                            //var xd = position.X - CordCenter.X - (line.IsPressed_Point_1 ? line.X1 : line.X2);
+                            //var yd = position.Y - CordCenter.Y - (line.IsPressed_Point_2 ? line.Y1 : line.Y2);
+
+                            //var xd = position.X - lastMousePosition.X;
+                            //var yd = position.Y - lastMousePosition.Y;
+
+                            if (line.IsPressed_Point_1)
+                            {
+                                //var linePoint = CustomLine.DisplayProjectionMatrix.Transform(new Point3D(position.X - CordCenter.X, position.Y - CordCenter.Y, line.Z1));
+
+                                line.X1 += xd;
+                                line.Y1 += yd;
+                            }
+                            else if (line.IsPressed_Point_2)
+                            {
+                                //var linePoint = CustomLine.DisplayProjectionMatrix.Transform(new Point3D(position.X - CordCenter.X, position.Y - CordCenter.Y, line.Z2));
+
+                                line.X2 += xd;
+                                line.Y2 += yd;
+                            }
                         }
                         else
-                        if (line.IsPressed_Point_2 && selectedObjects.Count == 1)
                         {
-                            line.X2 = position.X- CordCenter.X;
-                            line.Y2 = position.Y - CordCenter.Y;
-                        } else
-                        {
-                            var xd = position.X - lastMousePosition.X;
-                            var yd = position.Y - lastMousePosition.Y;
-
                             o.Move(xd, yd);
                         }
                     }
                     else
                     {
-                        var xd = position.X - lastMousePosition.X;
-                        var yd = position.Y - lastMousePosition.Y;
-                    
                         o.Move(xd, yd);
                     }
                 }
@@ -722,7 +871,6 @@ namespace Paint
         {
             isChoosingCordPostion = false;
         }
-
 
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
@@ -739,20 +887,19 @@ namespace Paint
         private void Canvas_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
             HideInfo();
-            PointInfo_Line.Text = "";
-            PointInfo_Point.Text = "";
 
             PointInfo_Point.Text = $"X:{e.GetPosition(Canvas).X - CordCenter.X:###0.0#} Y:{e.GetPosition(Canvas).Y - CordCenter.Y:###0.0#}";
         }
 
         private void Canvas_PreviewMouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
-            if (string.IsNullOrEmpty(PointInfo_Line.Text))
+            if (string.IsNullOrEmpty(PointInfo_Point.Text))
             {
                 e.Handled = true;
             }
-            //ShowInfo(e.GetPosition(Canvas));
+            ShowInfo(e.GetPosition(Canvas));
         }
+
 
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)

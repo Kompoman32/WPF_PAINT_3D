@@ -108,7 +108,7 @@ namespace Paint
             SendMatrix();
         }
 
-        private void TextBox_MouseWheel(object sender, MouseWheelEventArgs e)
+        public void TextBox_MouseWheel(object sender, MouseWheelEventArgs e)
         {
             var textbox = sender as TextBox;
 
@@ -144,7 +144,7 @@ namespace Paint
             matrixConverAction.Invoke(matrix);
         }
 
-        double ConvertToDouble(string str)
+        static double ConvertToDouble(string str)
         {
             str = str.Replace(".", ",");
             if (str == "-" || str == "-0," || str == "," || str == "")
