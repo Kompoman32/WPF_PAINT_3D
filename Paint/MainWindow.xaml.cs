@@ -25,6 +25,8 @@ namespace Paint
     /// </summary>
     public partial class MainWindow : Window
     {
+        public static double Scale = 1;
+
         public MainWindow()
         {
             CustomLine.DisplayProjectionMatrix =
@@ -38,6 +40,63 @@ namespace Paint
 
             InitializeComponent();
             GenerateCordSyst();
+
+            MoveCordSystTo(new Point(200, 200));
+
+            int[][] arr = {
+                new []{-100,-100,-100},
+                new []{-100,-100,100},
+
+                new []{-100,-100,-100},
+                new []{-100,100,-100},
+
+                new []{-100,100,-100},
+                new []{-100,100,100},
+
+                new []{-100,-100,100},
+                new []{-100,100,100},
+
+                new []{-100,-100,-100},
+                new []{100,-100,-100},
+
+                new []{-100,-100,100},
+                new []{100,-100,100},
+
+                new []{-100,100,-100},
+                new []{100,100,-100},
+
+                new []{-100,100,100},
+                new []{100,100,100},
+
+                new []{100,-100,-100},
+                new []{100,-100,100},
+
+                new []{100,-100,-100},
+                new []{100,100,-100},
+
+                new []{100,100,-100},
+                new []{100,100,100},
+
+                new []{100,-100,100},
+                new []{100,100,100},
+            };
+
+
+            for (byte i = 0; i < arr.Length; i += 2)
+            {
+                int x1 = arr[i][0] ;
+                int y1 = arr[i][1] ;
+                int z1 = arr[i][2] ;
+
+                int x2 = arr[i + 1][0] ;
+                int y2 = arr[i + 1][1] ;
+                int z2 = arr[i + 1][2] ;
+
+                var line = InitLine(x1, y1, x2, y2, z1, z2);
+                Canvas.Children.Add(line);
+                line.Select();
+                selectedObjects.Add(line);
+            }
         }
 
         Info infoWindow;
@@ -76,11 +135,11 @@ namespace Paint
 
             double x1 = rnd.Next(width - CanvasMargin) - CordCenter.X;
             double y1 = rnd.Next(height - CanvasMargin) - CordCenter.Y;
-            double z1 = rnd.NextDouble() * 2;
+            double z1 = 0;
 
             double x2 = rnd.Next(width - CanvasMargin) - CordCenter.X;
             double y2 = rnd.Next(height - CanvasMargin) - CordCenter.Y;
-            double z2 = rnd.NextDouble()*2;
+            double z2 = 0;
 
             var line = InitLine(x1, y1, x2, y2, z1, z2);
 
@@ -323,7 +382,7 @@ namespace Paint
 
         CustomLine onLine;
 
-        private CustomLine InitLine(double x1, double y1, double x2, double y2, double z1 = 1, double z2 = 1)
+        private CustomLine InitLine(double x1, double y1, double x2, double y2, double z1 = 0, double z2 = 0)
         {
             CustomLine line = new CustomLine(new SolidColorBrush((Color)ColorPicker.SelectedColor))
             {
@@ -568,10 +627,10 @@ namespace Paint
 
                 if (i % 100 == 0 && (i >= 100 || i <= -100))
                 {
-                    var label = new Label() { Margin = new Thickness(i - 16, 2, 0,0), Content=$"{i}", FontSize=12, Foreground=new SolidColorBrush(Colors.Black), Tag="OX" };
+                    var label = new Label() { Margin = new Thickness(i - 16, 2, 0,0), Content=$"{(i * Scale):00.00}", FontSize=12, Foreground=new SolidColorBrush(Colors.Black), Tag="OX" };
                     CordCanvas.Children.Add(label);
 
-                    label = new Label() { Margin = new Thickness(3, -i - 14, 0, 0), Content = $"{-i}", FontSize = 12, Foreground = new SolidColorBrush(Colors.Black), Tag = "OY" };
+                    label = new Label() { Margin = new Thickness(3, -i - 14, 0, 0), Content = $"{(-i * Scale):00.00}", FontSize = 12, Foreground = new SolidColorBrush(Colors.Black), Tag = "OY" };
                     CordCanvas.Children.Add(label);
                 }
             }

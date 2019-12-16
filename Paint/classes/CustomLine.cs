@@ -117,8 +117,12 @@ namespace Paint
             var y1 = this.Y1;//+ MainWindow.CordCenter.Y;
             var y2 = this.Y2;//+ MainWindow.CordCenter.Y;
 
-            var first = DisplayProjectionMatrix.Transform(new Point3D(x1, y1, Z1));
-            var second = DisplayProjectionMatrix.Transform(new Point3D(x2, y2, Z2));
+            var matrix = DisplayProjectionMatrix;
+
+            matrix.Scale(new Vector3D(MainWindow.Scale, MainWindow.Scale, MainWindow.Scale));
+
+            var first = matrix.Transform(new Point3D(x1, y1, Z1));
+            var second = matrix.Transform(new Point3D(x2, y2, Z2));
 
             x1 = first.X + MainWindow.CordCenter.X;
             x2 = second.X + MainWindow.CordCenter.X;
@@ -265,9 +269,9 @@ namespace Paint
             var first = matrix.Transform(new Point3D(originalPoint1.X, originalPoint1.Y, originalPoint1.Z));
             var second = matrix.Transform(new Point3D(originalPoint2.X, originalPoint2.Y, originalPoint2.Z));
 
-            X1 = first.X;
-            Y1 = first.Y;
-            Z1 = first.Z;
+            X1 = first.X; 
+            Y1 = first.Y; 
+            Z1 = first.Z; 
             X2 = second.X;
             Y2 = second.Y;
             Z2 = second.Z;

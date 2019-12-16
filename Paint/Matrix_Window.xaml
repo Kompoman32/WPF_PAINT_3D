@@ -8,52 +8,79 @@
         mc:Ignorable="d"
         ResizeMode="NoResize"
         Closed="Window_Closed"
-        Height="330" Width="470">
+        Height="380" Width="470">
     <Grid Background="BlueViolet" >
         <Grid.RowDefinitions>
             <RowDefinition Height="20" />
             <RowDefinition />
         </Grid.RowDefinitions>
-        <WrapPanel Grid.Row="1" Name="MatrixPanel"  Orientation="Vertical">
-            <WrapPanel Orientation="Horizontal">
-                <Label Width="40" Foreground="White">  </Label>
-                <Label Width="100" Foreground="White" HorizontalContentAlignment="Center">1</Label>
-                <Label Width="100" Foreground="White" HorizontalContentAlignment="Center">2</Label>
-                <Label Width="100" Foreground="White" HorizontalContentAlignment="Center">3</Label>
-                <Label Width="100" Foreground="White" HorizontalContentAlignment="Center">4</Label>
-            </WrapPanel>
-            <WrapPanel Orientation="Horizontal">
-                <Label   Foreground="White" Width="40" HorizontalContentAlignment="Center">1</Label>
-                <TextBox Width="100" TabIndex="0" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">1</TextBox>
-                <TextBox Width="100" TabIndex="1" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">0</TextBox>
-                <TextBox Width="100" TabIndex="2" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">0</TextBox>
-                <TextBox Width="100" TabIndex="3" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">0</TextBox>
-            </WrapPanel >
-            <WrapPanel Orientation="Horizontal">
-                <Label   Foreground="White" Width="40" HorizontalContentAlignment="Center">2</Label>
-                <TextBox Width="100" TabIndex="4" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">0</TextBox>
-                <TextBox Width="100" TabIndex="5" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">1</TextBox>
-                <TextBox Width="100" TabIndex="6" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">0</TextBox>
-                <TextBox Width="100" TabIndex="7" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">0</TextBox>
-            </WrapPanel>
-            <WrapPanel Orientation="Horizontal">
-                <Label   Foreground="White" Width="40" HorizontalContentAlignment="Center">3</Label>
-                <TextBox Width="100" TabIndex="8" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">0</TextBox>
-                <TextBox Width="100" TabIndex="9" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">0</TextBox>
-                <TextBox Width="100" TabIndex="10" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">1</TextBox>
-                <TextBox Width="100" TabIndex="11" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">0</TextBox>
-            </WrapPanel>
-            <WrapPanel Orientation="Horizontal">
-                <Label   Foreground="White" Width="40" HorizontalContentAlignment="Center">4</Label>
-                <TextBox Width="100" TabIndex="12" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">0</TextBox>
-                <TextBox Width="100" TabIndex="13" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">0</TextBox>
-                <TextBox Width="100" TabIndex="14" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">0</TextBox>
-                <TextBox Width="100" TabIndex="15" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">1</TextBox>
-            </WrapPanel>
-            <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="17 0 0 0">
-                <Button Width="140" Height="40" FontSize="25" Click="Save_Click">Сохранить</Button>
-                <Button Width="140" Height="40" FontSize="25" Click="Abort_Click">Отменить</Button>
-            </WrapPanel>
+        <WrapPanel Grid.Row="0">
+            <TextBlock x:Name="Matrix_Tab_Textblock" Width="100" Height="20" Text="Матрица" Background="Purple" Foreground="White" TextAlignment="Center" MouseLeftButtonUp="Tab_Textbox_MouseLeftButtonUp" />
+            <TextBlock x:Name="Paramters_Tab_Textblock" Width="100" Height="20" Text="Параметры" TextAlignment="Center" MouseLeftButtonUp="Tab_Textbox_MouseLeftButtonUp" />
         </WrapPanel>
+        <CheckBox HorizontalAlignment="Right" Checked="CheckBox_Checked" Unchecked="CheckBox_Checked" >Закрепить</CheckBox>
+        <Border Grid.Row="1" BorderBrush="Black" BorderThickness="2">
+            <WrapPanel Orientation="Vertical">
+                <WrapPanel Name="MatrixTab"   Orientation="Vertical">
+                    <WrapPanel Orientation="Horizontal">
+                        <Label Width="40" Foreground="White">  </Label>
+                        <Label Width="100" Foreground="White" HorizontalContentAlignment="Center">1</Label>
+                        <Label Width="100" Foreground="White" HorizontalContentAlignment="Center">2</Label>
+                        <Label Width="100" Foreground="White" HorizontalContentAlignment="Center">3</Label>
+                        <Label Width="100" Foreground="White" HorizontalContentAlignment="Center">4</Label>
+                    </WrapPanel>
+                    <WrapPanel Orientation="Horizontal">
+                        <Label   Foreground="White" Width="40" HorizontalContentAlignment="Center">1</Label>
+                        <TextBox Width="100" TabIndex="0" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">1</TextBox>
+                        <TextBox Width="100" TabIndex="1" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">0</TextBox>
+                        <TextBox Width="100" TabIndex="2" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">0</TextBox>
+                        <TextBox Width="100" TabIndex="3" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">0</TextBox>
+                    </WrapPanel >
+                    <WrapPanel Orientation="Horizontal">
+                        <Label   Foreground="White" Width="40" HorizontalContentAlignment="Center">2</Label>
+                        <TextBox Width="100" TabIndex="4" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">0</TextBox>
+                        <TextBox Width="100" TabIndex="5" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">1</TextBox>
+                        <TextBox Width="100" TabIndex="6" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">0</TextBox>
+                        <TextBox Width="100" TabIndex="7" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">0</TextBox>
+                    </WrapPanel>
+                    <WrapPanel Orientation="Horizontal">
+                        <Label   Foreground="White" Width="40" HorizontalContentAlignment="Center">3</Label>
+                        <TextBox Width="100" TabIndex="8" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">0</TextBox>
+                        <TextBox Width="100" TabIndex="9" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">0</TextBox>
+                        <TextBox Width="100" TabIndex="10" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">1</TextBox>
+                        <TextBox Width="100" TabIndex="11" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">0</TextBox>
+                    </WrapPanel>
+                    <WrapPanel Orientation="Horizontal">
+                        <Label   Foreground="White" Width="40" HorizontalContentAlignment="Center">4</Label>
+                        <TextBox Width="100" TabIndex="12" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">0</TextBox>
+                        <TextBox Width="100" TabIndex="13" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">0</TextBox>
+                        <TextBox Width="100" TabIndex="14" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">0</TextBox>
+                        <TextBox Width="100" TabIndex="15" PreviewKeyDown="TextBox_PreviewKeyDown" TextChanged="TextBox_TextChanged" MouseWheel="TextBox_MouseWheel" LostFocus="TextBox_LostFocus">1</TextBox>
+                    </WrapPanel>
+                </WrapPanel>
+                <WrapPanel Name="ParametersTab" Visibility="Collapsed"  Orientation="Vertical">
+                    <TextBlock>Вращение вокруг OX</TextBlock>
+                    <WrapPanel Orientation="Horizontal">
+                        <ScrollBar Orientation="Horizontal" Width="200" x:Name="ox_Scroll" MouseWheel="TextBox_MouseWheel" ValueChanged="ScrollBar_ValueChanged" Minimum="-2" Maximum="2" SmallChange="0.01" LargeChange="0.1" />
+                        <TextBlock x:Name="ox_Textblock"/>
+                    </WrapPanel>
+                    <TextBlock>Вращение вокруг OY</TextBlock>
+                    <WrapPanel Orientation="Horizontal">
+                        <ScrollBar Orientation="Horizontal" Width="200" x:Name="oy_Scroll" MouseWheel="TextBox_MouseWheel" ValueChanged="ScrollBar_ValueChanged" Minimum="-2" Maximum="2" SmallChange="0.01" LargeChange="0.1" />
+                        <TextBlock x:Name="oy_Textblock"/>
+                    </WrapPanel>
+                    <TextBlock>Вращение вокруг OZ</TextBlock>
+                    <WrapPanel Orientation="Horizontal">
+                        <ScrollBar Orientation="Horizontal" Width="200" x:Name="oz_Scroll" MouseWheel="TextBox_MouseWheel" ValueChanged="ScrollBar_ValueChanged" Minimum="-2" Maximum="2" SmallChange="0.01" LargeChange="0.1" />
+                        <TextBlock x:Name="oz_Textblock"/>
+                    </WrapPanel>
+                </WrapPanel>
+                <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="17 0 0 0">
+                    <Button Width="140" Height="40" FontSize="25" Click="Save_Click">Сохранить</Button>
+                    <Button Width="140" Height="40" FontSize="25" Click="Abort_Click">Отменить</Button>
+                </WrapPanel>
+            </WrapPanel>
+        </Border>
+
     </Grid>
 </Window>
