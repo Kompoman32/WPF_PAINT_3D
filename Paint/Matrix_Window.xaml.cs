@@ -130,7 +130,7 @@ namespace Paint
 
             if (textbox != null)
             {
-                textbox.Text = text;
+                textbox.Text = val.ToString();
             }
             else if (scrollBar != null)
             {
@@ -223,17 +223,21 @@ namespace Paint
 
             if (lastTab != textBlock)
             {
-                lastTab = sender as TextBlock;
+                lastTab = textBlock;
 
                 if (lastTab == Matrix_Tab_Textblock)
                 {
                     MatrixTab.Visibility = Visibility.Visible;
+                    Matrix_Tab_Textblock.Background = new SolidColorBrush(Colors.Purple);
                     ParametersTab.Visibility = Visibility.Collapsed;
+                    Paramters_Tab_Textblock.Background = new SolidColorBrush(Colors.Transparent);
                 }
                 else
                 {
                     MatrixTab.Visibility = Visibility.Collapsed;
+                    Matrix_Tab_Textblock.Background = new SolidColorBrush(Colors.Transparent);
                     ParametersTab.Visibility = Visibility.Visible;
+                    Paramters_Tab_Textblock.Background = new SolidColorBrush(Colors.Purple);
                 }
             }
 

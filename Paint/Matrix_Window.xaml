@@ -16,7 +16,7 @@
         </Grid.RowDefinitions>
         <WrapPanel Grid.Row="0">
             <TextBlock x:Name="Matrix_Tab_Textblock" Width="100" Height="20" Text="Матрица" Background="Purple" Foreground="White" TextAlignment="Center" MouseLeftButtonUp="Tab_Textbox_MouseLeftButtonUp" />
-            <TextBlock x:Name="Paramters_Tab_Textblock" Width="100" Height="20" Text="Параметры" TextAlignment="Center" MouseLeftButtonUp="Tab_Textbox_MouseLeftButtonUp" />
+            <TextBlock x:Name="Paramters_Tab_Textblock" Width="100" Height="20" Text="Параметры" TextAlignment="Center" MouseLeftButtonUp="Tab_Textbox_MouseLeftButtonUp" Foreground="White" />
         </WrapPanel>
         <CheckBox HorizontalAlignment="Right" Checked="CheckBox_Checked" Unchecked="CheckBox_Checked" >Закрепить</CheckBox>
         <Border Grid.Row="1" BorderBrush="Black" BorderThickness="2">
@@ -59,20 +59,20 @@
                     </WrapPanel>
                 </WrapPanel>
                 <WrapPanel Name="ParametersTab" Visibility="Collapsed"  Orientation="Vertical">
-                    <TextBlock>Вращение вокруг OX</TextBlock>
+                    <TextBlock Foreground="White">Вращение вокруг OX</TextBlock>
                     <WrapPanel Orientation="Horizontal">
                         <ScrollBar Orientation="Horizontal" Width="200" x:Name="ox_Scroll" MouseWheel="TextBox_MouseWheel" ValueChanged="ScrollBar_ValueChanged" Minimum="-2" Maximum="2" SmallChange="0.01" LargeChange="0.1" />
-                        <TextBlock x:Name="ox_Textblock"/>
+                        <TextBlock x:Name="ox_Textblock" Foreground="White"/>
                     </WrapPanel>
-                    <TextBlock>Вращение вокруг OY</TextBlock>
+                    <TextBlock Foreground="White">Вращение вокруг OY</TextBlock>
                     <WrapPanel Orientation="Horizontal">
                         <ScrollBar Orientation="Horizontal" Width="200" x:Name="oy_Scroll" MouseWheel="TextBox_MouseWheel" ValueChanged="ScrollBar_ValueChanged" Minimum="-2" Maximum="2" SmallChange="0.01" LargeChange="0.1" />
-                        <TextBlock x:Name="oy_Textblock"/>
+                        <TextBlock x:Name="oy_Textblock" Foreground="White"/>
                     </WrapPanel>
-                    <TextBlock>Вращение вокруг OZ</TextBlock>
+                    <TextBlock Foreground="White">Вращение вокруг OZ</TextBlock>
                     <WrapPanel Orientation="Horizontal">
                         <ScrollBar Orientation="Horizontal" Width="200" x:Name="oz_Scroll" MouseWheel="TextBox_MouseWheel" ValueChanged="ScrollBar_ValueChanged" Minimum="-2" Maximum="2" SmallChange="0.01" LargeChange="0.1" />
-                        <TextBlock x:Name="oz_Textblock"/>
+                        <TextBlock x:Name="oz_Textblock" Foreground="White"/>
                     </WrapPanel>
                 </WrapPanel>
                 <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="17 0 0 0">

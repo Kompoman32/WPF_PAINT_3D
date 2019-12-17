@@ -7,12 +7,17 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
         Closing="Window_Closing"
-        Title="Super Puper Paint In The World" Height="450" Width="800">
+        Title="Super Puper Paint In The World"
+        MinHeight="450" 
+        Height="450" 
+        MinWidth="300"
+        Width="800"
+        >
     <Grid>
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="55" />
+                <ColumnDefinition  />
+                <ColumnDefinition x:Name="ToolBar_Column"  Width="90" />
             </Grid.ColumnDefinitions>
             <Grid Grid.Column="0" x:Name="Canvas_Grid" Background="LightGray">
                 <Canvas>
@@ -23,18 +28,21 @@
                 <Canvas x:Name="Canvas" Background="Transparent" MouseMove="Canvas_MouseMove" MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseLeftButtonUp="Canvas_MouseLeftButtonUp" PreviewMouseRightButtonDown="Canvas_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="Canvas_PreviewMouseRightButtonUp">
                 
                 </Canvas>
-                
+                <TextBlock x:Name="HidaToolBarButton" MouseUp="HidaToolBarButton_MouseUp"  HorizontalAlignment="Right" FontSize="25">❯</TextBlock>
             </Grid>
-            <Grid Grid.Column="1" >
+            <Grid x:Name="Toolbar" Grid.Column="1" Width="90" Visibility="Visible">
                 <Grid Background="BlueViolet">
-                
+                    
                 </Grid>
                 <WrapPanel Orientation="Vertical">
                     <WrapPanel Orientation="Horizontal">
-                        <Button Click="Save_Click" Cursor="Hand" Width="20" Height="20" FontSize="12" Margin="3 2">💾</Button>
-                        <Button Click="Load_Click" Cursor="Hand" Width="20" Height="20" FontSize="12" Margin="3 2">🗁</Button>
+                        <Button Click="Save_Click" Cursor="Hand">💾</Button>
+                        <Button Click="Load_Click" Cursor="Hand">🗁</Button>
                     </WrapPanel>
-                    <Button Click="ClearLines_Click" Cursor="Hand" Width="20" Height="20" FontSize="17" Padding="0 -3 0 0" HorizontalAlignment="Right">⟳</Button>
+                    <WrapPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Click="OpenInfo_Click" Cursor="Hand" >🛈</Button>
+                        <Button Click="ClearLines_Click" Cursor="Hand"  >⟳</Button>
+                    </WrapPanel>
                     <Label Height="2" Background="Gray" Margin="0 0 0 0"></Label>
                     <Button Click="CreateLine_Click" Cursor="Hand">+</Button>
                     <Button Click="RemoveObject_Click" Cursor="Hand">-</Button>
@@ -49,6 +57,7 @@
                     <RadioButton Name="GlobalCordSystem_checkbox" HorizontalAlignment="Left" Foreground="White" Margin="5 0 0 0 " IsEnabled="False" GroupName="Cord" IsChecked="True" Checked="GlobalCordSystem_checkbox_Checked">Глоб</RadioButton>
                     <RadioButton Name="LocalCordSystem_checkbox" HorizontalAlignment="Left" Foreground="White" Margin="5 0 0 0 " IsEnabled="False" GroupName="Cord" Click="LocalCordSystem_checkbox_Click">Лок</RadioButton>
                     <Label Height="2" Background="Gray" Margin="0 5 0 5 "></Label>
+                    <Button Click="OpenMorphing_Click" Cursor="Hand">↝</Button>
                 </WrapPanel>
             </Grid>
         </Grid>

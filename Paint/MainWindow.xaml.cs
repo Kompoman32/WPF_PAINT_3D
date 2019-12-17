@@ -35,9 +35,6 @@ namespace Paint
                              0, 0, 1, 0.00,
                              0, 0, 0, 1);
 
-            this.infoWindow = new Info();
-            this.infoWindow.Show();
-
             InitializeComponent();
             GenerateCordSyst();
 
@@ -97,19 +94,35 @@ namespace Paint
                 line.Select();
                 selectedObjects.Add(line);
             }
+
+            GroupSelected_Click(null, null);
+            LocalCordSystem_checkbox.IsChecked = true;
         }
 
-        Info infoWindow;
-
         static Random rnd = new Random();
-
         public static int CanvasMargin = 10;
 
+        Info infoWindow;
         Matrix_Window matrixWindow;
-
-        bool isMatrixWindowOpened = false;
+        Morph_Window morphWindow;
 
         #region Кнопки
+        private void HidaToolBarButton_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (HidaToolBarButton.Text == "❯")
+            {
+                ToolBar_Column.Width = new GridLength(0);
+                HidaToolBarButton.Text = "❮";
+                Toolbar.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                ToolBar_Column.Width = new GridLength(90);
+                HidaToolBarButton.Text = "❯";
+                Toolbar.Visibility = Visibility.Visible;
+            }
+
+        }
 
         private void ClearLines_Click(object sender, RoutedEventArgs e)
         {
@@ -177,10 +190,6 @@ namespace Paint
 
         private void GroupSelected_Click(object sender, RoutedEventArgs e)
         {
-            var line = Canvas.Children.Cast<IMyObject>().FirstOrDefault(x => x is CustomLine) as CustomLine;
-
-            MessageBox.Show($"({line.X1};{line.Y1})\n{line.X2};{line.Y2})");
-
             if (selectedObjects.Count <= 1) return;
 
             var group = new CustomGroup(selectedObjects);
@@ -214,16 +223,9 @@ namespace Paint
                                     );
                 matrixWindow.Closed += (object s, EventArgs ev) =>
                 {
-                    isMatrixWindowOpened = false;
                     matrixWindow = null;
                 };
-            }
-
-            if (!isMatrixWindowOpened)
-            {
                 matrixWindow.Show();
-                isMatrixWindowOpened = true;
-
             }
             else
             {
@@ -231,8 +233,41 @@ namespace Paint
             }
         }
 
+        private void OpenInfo_Click(object sender, RoutedEventArgs e)
+        {
+            if (infoWindow == null)
+            {
+                infoWindow = new Info();
+                infoWindow.Closed += (object s, EventArgs ev) =>
+                {
+                    infoWindow = null;
+                };
+                infoWindow.Show();
+            }
+            else
+            {
+                infoWindow.Focus();
+            }
+        }
 
-        bool isChoosingCordPostion = false;
+        private void OpenMorphing_Click(object sender, RoutedEventArgs e)
+        {
+            if (morphWindow == null)
+            {
+                morphWindow = new Morph_Window();
+                morphWindow.Closed += (object s, EventArgs ev) =>
+                {
+                    infoWindow = null;
+                };
+                morphWindow.Show();
+            }
+            else
+            {
+                morphWindow.Focus();
+            }
+        }
+
+        bool isChoosingCordPosition = false;
 
         private void CordSyst_Checked(object sender, RoutedEventArgs e)
         {
@@ -244,7 +279,7 @@ namespace Paint
             }
             else
             {
-                isChoosingCordPostion = false;
+                isChoosingCordPosition = false;
 
                 CordCanvas.Visibility = Visibility.Hidden;
                 LocalCordSystem_checkbox.IsEnabled = false;
@@ -256,14 +291,14 @@ namespace Paint
         {
             if (isLoading) return;
 
-            isChoosingCordPostion = true;
+            isChoosingCordPosition = true;
         }
 
         private void GlobalCordSystem_checkbox_Checked(object sender, RoutedEventArgs e)
         {
             if (isLoading) return;
 
-            isChoosingCordPostion = false;
+            isChoosingCordPosition = false;
             MoveCordSystTo(new Point(0, 0));
 
         }
@@ -345,7 +380,7 @@ namespace Paint
                     LocalCordSystem_checkbox.IsChecked = true;
                 }
 
-                isChoosingCordPostion = false;
+                isChoosingCordPosition = false;
                 CordSyst_Checked(null, null);
                 MoveCordSystTo(center);
 
@@ -692,14 +727,15 @@ namespace Paint
 
             if (line == null)
             {
-                infoWindow.SetPointOnLine(new Point(0,0));
+
+                infoWindow?.SetPointOnLine(new Point(0,0));
                 return;
             }
              else
             {
                 var realpoint = position.GetProjectionPointOnLine(line);
 
-                infoWindow.SetPointOnLine(realpoint);
+                infoWindow?.SetPointOnLine(realpoint);
             }
 
             if (position.IsOnTheLine(line))
@@ -865,13 +901,13 @@ namespace Paint
             pos.Offset(-CordCenter.X, -CordCenter.Y);
 
 
-            infoWindow.SetPoint(pos);
-            infoWindow.SetObjects(selectedObjects);
+            infoWindow?.SetPoint(pos);
+            infoWindow?.SetObjects(selectedObjects);
             SetPointsInfo(pos, onLine);
 
             if (e.LeftButton == MouseButtonState.Pressed)
             {
-                if (isChoosingCordPostion)
+                if (isChoosingCordPosition)
                 {
                     MoveCordSystTo(e.GetPosition(Canvas));
                     e.Handled = true;
@@ -928,12 +964,12 @@ namespace Paint
 
         private void Canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            isChoosingCordPostion = false;
+            isChoosingCordPosition = false;
         }
 
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (isChoosingCordPostion)
+            if (isChoosingCordPosition)
             {
                 MoveCordSystTo(e.GetPosition(Canvas));
                 e.Handled = true;
@@ -993,7 +1029,14 @@ namespace Paint
             {
                 matrixWindow.Close();
             }
-            infoWindow.CloseThis();
+            if (infoWindow != null)
+            {
+                infoWindow.Close();
+            }
+            if (morphWindow != null)
+            {
+                morphWindow.Close();
+            }
         }
     }
 }

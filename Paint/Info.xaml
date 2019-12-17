@@ -7,7 +7,6 @@
         mc:Ignorable="d"
         MinWidth="420"
         MinHeight="500"
-        Closing="Window_Closing"
         Title="Info" Height="500" Width="420">
     <Grid Background="BlueViolet">
         <Grid.RowDefinitions>
@@ -30,6 +29,7 @@
                 <Label Grid.Row="1" Grid.Column="1" Name="pointOnLine" Foreground="White">( 0.00 | 0.00 )</Label>
             </Grid>
         </WrapPanel>
+        <CheckBox HorizontalAlignment="Right" Checked="CheckBox_Checked" Unchecked="CheckBox_Checked" Foreground="White">Закрепить</CheckBox>
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" Margin="10 10 10 10">
             <TextBlock x:Name="LinesBlock" Background="White">
                 

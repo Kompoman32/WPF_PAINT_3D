@@ -52,8 +52,8 @@ namespace Paint
 
         private string GetStringOnLine(string offset, CustomLine line)
         {
-            return $"{offset}({line.X1};{line.Y1};{line.Z1}) " +
-                   $"({line.X2};{line.Y2};{line.Z2})\n" +
+            return $"{offset}({line.X1:00.00};{line.Y1:00.00};{line.Z1:00.00}) " +
+                   $"({line.X2:00.00};{line.Y2:00.00};{line.Z2:00.00})\n" +
                    $"{offset}  {line.Equation}\n";
         }
 
@@ -78,17 +78,9 @@ namespace Paint
             return str;
         }
 
-        bool isClosing = false;
-
-        public void CloseThis()
+        private void CheckBox_Checked(object sender, RoutedEventArgs e)
         {
-            isClosing = true;
-            Close();
+            Topmost = (sender as CheckBox).IsChecked == true;
         }
-
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            e.Cancel = !isClosing;
-        }
-}
+    }
 }
