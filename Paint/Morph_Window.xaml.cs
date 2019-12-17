@@ -1,8 +1,10 @@
 ﻿using Paint.classes;
+using Paint.interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -13,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace Paint
 {
@@ -21,331 +24,391 @@ namespace Paint
     /// </summary>
     public partial class Morph_Window : Window
     {
-        Action<Matrix3D> matrixConverAction;
-        Action saveAction;
-        Action abortAction;
+        Action<IEnumerable<IMyObject>> changeSelectetObjectsAction;
+        Action<IEnumerable<CustomLine>> addLinesActon;
+        Action<IEnumerable<CustomLine>> removeLinesActon;
 
-        public Morph_Window()
+        static Random rnd = new Random();
+        Dispatcher _disp;
+
+
+        public Morph_Window(Dispatcher disp, IEnumerable<IMyObject> objects, Action<IEnumerable<IMyObject>> changeSelectetObjectsAction,
+                            Action<IEnumerable<CustomLine>> addLinesActon, Action<IEnumerable<CustomLine>> removeLinesActon)
         {
-            matrixConverAction = _ => {};
-            saveAction = () => {};
-            abortAction = () => {};
+            _disp = disp;
             InitializeComponent();
+
+            this.changeSelectetObjectsAction = changeSelectetObjectsAction;
+            this.addLinesActon = addLinesActon;
+            this.removeLinesActon = removeLinesActon;
+
+            sourceObjects.AddRange(objects);
+
+            currentObjects = this.sourceObjects;
+            currentTextBLock = SourceLinesBlock;
+            UpdateVisual();
+
+            DataContext = this;
         }
 
         string defaultOffset = "    ";
 
-        public Morph_Window(Action<Matrix3D> matrixConverAction, Action saveAction, Action abortAction) :this()
+
+        bool isMoving = false;
+        bool isAvailableButtons = false;
+        bool isAvailableScrolls= false;
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            this.matrixConverAction = matrixConverAction;
-            this.saveAction = saveAction;
-            this.abortAction = abortAction;
+            if (isMoving) e.Cancel = true;
         }
 
-        //private void TextBox_PreviewKeyDown(object sender, KeyEventArgs e)
-        //{
-        //    var textbox = sender as TextBox;
-
-        //    var available = new List<Key>()
-        //    {
-        //        Key.D0,
-        //        Key.D1,
-        //        Key.D2,
-        //        Key.D3,
-        //        Key.D4,
-        //        Key.D5,
-        //        Key.D6,
-        //        Key.D7,
-        //        Key.D8,
-        //        Key.D9,
-
-        //        Key.NumPad0,
-        //        Key.NumPad1,
-        //        Key.NumPad2,
-        //        Key.NumPad3,
-        //        Key.NumPad4,
-        //        Key.NumPad5,
-        //        Key.NumPad6,
-        //        Key.NumPad7,
-        //        Key.NumPad8,
-        //        Key.NumPad9,
-
-        //        Key.OemMinus,
-        //        Key.Subtract,
-        //        Key.OemPeriod,
-        //        Key.Decimal,
-
-        //        Key.Delete,
-        //        Key.Back,
-        //        Key.Left,
-        //        Key.Right,
-        //        Key.Home,
-        //        Key.End,
-        //    };
+        List<IMyObject> currentObjects;
+        TextBlock currentTextBLock;
 
 
-        //    if (available.Contains(e.Key))
-        //    {
-        //        if ((e.Key == Key.OemMinus || e.Key == Key.Subtract) && (textbox.Text.Contains('-') || textbox.CaretIndex > 0)
-        //            || (e.Key == Key.OemPeriod || e.Key == Key.Decimal) && (textbox.Text.Contains(",") || textbox.Text.Contains(".")))
-        //        {
-        //            e.Handled = true;
-        //        }
-        //    } else
-        //    {
-        //        e.Handled = true;
-        //    }
-        //}
+        List<IMyObject> sourceObjects = new List<IMyObject>();
+        List<IMyObject> targetObjects = new List<IMyObject>();
 
-        //private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
-        //{
-        //    var textbox = sender as TextBox;
+        Button lastButton;
 
-        //    var index = textbox.CaretIndex;
-        //    if (textbox.Text.Contains("-."))
-        //    {
-        //        textbox.Text = textbox.Text.Replace("-.", "-0.");
-        //        textbox.CaretIndex = index + 1;
-        //    }
-
-        //    SendMatrix();
-        //}
-
-        //public void TextBox_MouseWheel(object sender, MouseWheelEventArgs e)
-        //{
-        //    var textbox = sender as TextBox;
-        //    var scrollBar = sender as System.Windows.Controls.Primitives.ScrollBar;
-
-        //    string text = "";
-
-        //    if (textbox != null)
-        //    {
-        //        text = textbox.Text;
-        //    } else if (scrollBar !=  null)
-        //    {
-        //        text = scrollBar.Value.ToString();
-        //    }
-            
-        //    double val = ConvertToDouble(text);
-        //    val += e.Delta > 0 ? 0.1: -0.1;
-
-        //    if (textbox != null)
-        //    {
-        //        textbox.Text = val.ToString();
-        //    }
-        //    else if (scrollBar != null)
-        //    {
-        //        if (val > scrollBar.Maximum)
-        //        {
-        //            val -= scrollBar.Maximum - scrollBar.Minimum;
-        //        } else if (val < scrollBar.Minimum)
-        //        {
-        //            val += scrollBar.Maximum - scrollBar.Minimum;
-        //        }
-        //        scrollBar.Value = val;
-        //    }
-        //}
-
-        //private void SendMatrix()
-        //{
-        //    List<double> list = new List<double>(16);
-
-        //    MatrixTab.Children.Cast<WrapPanel>()
-        //        .Select(x => x.Children.Cast<UIElement>().Where(el => el is TextBox))
-        //        .Select(x=>
-        //        {
-        //            list.AddRange(x.Cast<TextBox>().Select(t => ConvertToDouble(t.Text)));
-        //            return true;
-        //        })
-        //        .ToList();
-
-        //    if (list.Count < 16) return;
-
-
-        //    Matrix3D matrix = new Matrix3D(list[0], list[1], list[2], list[3],
-        //                                   list[4], list[5], list[6], list[7],
-        //                                   list[8], list[9], list[10], list[11],
-        //                                   list[12], list[13], list[14], list[15]);
-
-        //    matrixConverAction.Invoke(matrix);
-        //}
-
-        //static double ConvertToDouble(string str)
-        //{
-        //    str = str.Replace(".", ",");
-        //    if (str == "-" || str == "-0," || str == "," || str == "")
-        //    {
-        //        str = "0";
-        //    }
-        //    else
-        //    {
-        //        if (str.LastIndexOf(",") == str.Length - 1)
-        //        {
-        //            str = str.Replace(",", "");
-        //        }
-        //    }
-        //    double.TryParse(str, out double val);
-        //    return val;
-        //}
-
-        //bool isSaved = false;
-
-        //private void Window_Closed(object sender, EventArgs e)
-        //{
-        //    if (isSaved) return;
-
-        //    abortAction.Invoke();
-        //}
-
-        //private void Save_Click(object sender, RoutedEventArgs e)
-        //{
-        //    SendMatrix();
-        //    saveAction.Invoke();
-        //    isSaved = true;
-        //    Close();
-        //}
-
-        //private void Abort_Click(object sender, RoutedEventArgs e)
-        //{
-        //    isSaved = false;
-        //    Close();
-        //}
-
-        //private void TextBox_LostFocus(object sender, RoutedEventArgs e)
-        //{
-        //    (sender as TextBox).Text = ConvertToDouble((sender as TextBox).Text).ToString().Replace(",", ".");
-        //}
-
-        //TextBlock lastTab;
-
-        //private void Tab_Textbox_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        //{
-        //    var textBlock = sender as TextBlock;
-
-        //    if (lastTab != textBlock)
-        //    {
-        //        lastTab = textBlock;
-
-        //        if (lastTab == Matrix_Tab_Textblock)
-        //        {
-        //            MatrixTab.Visibility = Visibility.Visible;
-        //            Matrix_Tab_Textblock.Background = new SolidColorBrush(Colors.Purple);
-        //            ParametersTab.Visibility = Visibility.Collapsed;
-        //            Paramters_Tab_Textblock.Background = new SolidColorBrush(Colors.Transparent);
-        //        }
-        //        else
-        //        {
-        //            MatrixTab.Visibility = Visibility.Collapsed;
-        //            Matrix_Tab_Textblock.Background = new SolidColorBrush(Colors.Transparent);
-        //            ParametersTab.Visibility = Visibility.Visible;
-        //            Paramters_Tab_Textblock.Background = new SolidColorBrush(Colors.Purple);
-        //        }
-        //    }
-
-        //}
-
-        //private void ConvertFromParametersToMatrix(Matrix3D matrix)
-        //{
-        //    List<TextBox> list = new List<TextBox>(16);
-
-        //    MatrixTab.Children.Cast<WrapPanel>()
-        //        .Select(x => x.Children.Cast<UIElement>().Where(el => el is TextBox))
-        //        .Select(x =>
-        //        {
-        //            list.AddRange(x.Cast<TextBox>());
-        //            return true;
-        //        })
-        //        .ToList();
-
-        //    if (list.Count < 16) return;
-
-        //    list[0].Text = matrix.M11.ToString(); 
-        //    list[1].Text = matrix.M12.ToString(); 
-        //    list[2].Text = matrix.M13.ToString(); 
-        //    list[3].Text = matrix.M14.ToString();
-                                           
-        //    list[4].Text = matrix.M21.ToString(); 
-        //    list[5].Text = matrix.M22.ToString(); 
-        //    list[6].Text = matrix.M23.ToString(); 
-        //    list[7].Text = matrix.M24.ToString();
-
-        //    list[8].Text = matrix.M31.ToString();
-        //    list[9].Text = matrix.M32.ToString(); 
-        //    list[10].Text = matrix.M33.ToString(); 
-        //    list[11].Text = matrix.M34.ToString();
-                                           
-        //    list[12].Text = matrix.OffsetX.ToString(); 
-        //    list[13].Text = matrix.OffsetY.ToString(); 
-        //    list[14].Text = matrix.OffsetZ.ToString();
-        //    list[15].Text = matrix.M44.ToString();
-
-        //}
-
-        //private void ScrollBar_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        //{
-        //    double a_x = Math.Sin(ox_Scroll.Value * Math.PI);
-        //    double b_x = Math.Cos(ox_Scroll.Value * Math.PI);
-        //    Matrix3D rotateToOx = new Matrix3D(1, 0, 0, 0,
-        //                                       0, b_x, a_x, 0,
-        //                                       0, -a_x, b_x, 0,
-        //                                       0, 0, 0, 1);
-
-        //    ox_Textblock.Text = ox_Scroll.Value.ToString();
-
-        //    double a_y = Math.Sin(oy_Scroll.Value * Math.PI);
-        //    double b_y = Math.Cos(oy_Scroll.Value * Math.PI);
-        //    Matrix3D rotateToOy = new Matrix3D(b_y, 0, -a_y, 0,
-        //                                       0, 1, 0, 0,
-        //                                       a_y, 0, b_y, 0,
-        //                                       0, 0, 0, 1);
-
-        //    oy_Textblock.Text = oy_Scroll.Value.ToString();
-
-        //    double a_z = Math.Sin(oz_Scroll.Value * Math.PI);
-        //    double b_z = Math.Cos(oz_Scroll.Value * Math.PI);
-        //    Matrix3D rotateToOz = new Matrix3D(b_z, a_z, 0, 0,
-        //                                       -a_z, b_z, 0, 0,
-        //                                       0, 0, 1, 0,
-        //                                       0, 0, 0, 1);
-
-        //    oz_Textblock.Text = oz_Scroll.Value.ToString();
-
-        //    ConvertFromParametersToMatrix(rotateToOx * rotateToOy * rotateToOz);
-
-        //    matrixConverAction.Invoke(rotateToOx * rotateToOy * rotateToOz);
-        //}
-
-        //private string GetStringOnLine(string offset, CustomLine line)
-        //{
-        //    return $"{offset}({line.X1:00.00};{line.Y1:00.00};{line.Z1:00.00}) " +
-        //           $"({line.X2:00.00};{line.Y2:00.00};{line.Z2:00.00})\n" +
-        //           $"{offset}  {line.Equation}\n";
-        //}
-
-        //private string GetStringOnObjects(string offset, IEnumerable<IMyObject> objects)
-        //{
-        //    string str = $"{offset}---\n";
-        //    foreach (var o in objects)
-        //    {
-        //        if (o is CustomLine)
-        //        {
-        //            str += GetStringOnLine(offset, o as CustomLine);
-        //        }
-
-        //        if (o is CustomGroup)
-        //        {
-        //            str += GetStringOnObjects(offset + defaultOffset, (o as CustomGroup).GetObjects());
-        //        }
-        //    }
-
-        //    str += $"{offset}---\n";
-
-        //    return str;
-        //}
-
-        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        private void ChooseSourceOrTargetButton_Click(object sender, RoutedEventArgs e)
         {
-            Topmost = (sender as CheckBox).IsChecked == true;
+            var button = sender as Button;
+
+            if (lastButton != button)
+            {
+                lastButton = button;
+
+                if (lastButton == ChooseSourceButton)
+                {
+                    ChooseSourceButton.Background = new SolidColorBrush(Colors.Purple);
+                    ChooseSourceButton.Foreground = new SolidColorBrush(Colors.White);
+
+                    ChooseTargetButton.Background = new SolidColorBrush(Colors.White);
+                    ChooseTargetButton.Foreground = new SolidColorBrush(Colors.Black);
+
+                    SetCurrentObjects(sourceObjects, SourceLinesBlock);
+                }
+                else
+                {
+                    ChooseSourceButton.Background = new SolidColorBrush(Colors.White);
+                    ChooseSourceButton.Foreground = new SolidColorBrush(Colors.Black);
+
+                    ChooseTargetButton.Background = new SolidColorBrush(Colors.Purple);
+                    ChooseTargetButton.Foreground = new SolidColorBrush(Colors.White);
+
+                    SetCurrentObjects(targetObjects, TargetLinesBlock);
+                }
+            }
+        }
+
+        private void SetCurrentObjects(List<IMyObject> objects, TextBlock textblock)
+        {
+            currentObjects.Select(x => { x.UnSelect(); return true; }).ToList();
+            currentObjects = objects;
+            currentObjects.Select(x => { x.Select(); return true; }).ToList();
+
+            currentTextBLock = textblock;
+            changeSelectetObjectsAction.Invoke(currentObjects);
+        }
+
+        private string GetStringOnLine(string offset, CustomLine line)
+        {
+            return $"{offset}({line.X1:00.00};{line.Y1:00.00};{line.Z1:00.00}) " +
+                   $"({line.X2:00.00};{line.Y2:00.00};{line.Z2:00.00})\n" +
+                   $"{offset}  {line.Equation}\n";
+        }
+        private string GetStringOnObjects(string offset, IEnumerable<IMyObject> objects)
+        {
+            string str = $"{offset}---\n";
+            foreach (var o in objects)
+            {
+                if (o is CustomLine)
+                {
+                    str += GetStringOnLine(offset, o as CustomLine);
+                }
+
+                if (o is CustomGroup)
+                {
+                    str += GetStringOnObjects(offset + defaultOffset, (o as CustomGroup).GetObjects());
+                }
+            }
+
+            str += $"{offset}---\n";
+
+            return str;
+        }
+
+        public void AddObject(IMyObject obj)
+        {
+            currentObjects.Add(obj);
+            UpdateVisual();
+        }
+        public void AddRangeObjects(IEnumerable<IMyObject> objects)
+        {
+            currentObjects.AddRange(objects);
+            UpdateVisual();
+        }
+        public void RemoveObject(IMyObject obj)
+        {
+            currentObjects.Remove(obj);
+            UpdateVisual();
+        }
+        public void ClearObjects()
+        {
+            currentObjects.Clear();
+            UpdateVisual();
+        }
+        public void ClearAll()
+        {
+            sourceObjects.Clear();
+            targetObjects.Clear();
+            UpdateVisual();
+        }
+
+        public void UpdateVisual()
+        {
+            if (isMoving) return;
+
+            currentTextBLock.Text = GetStringOnObjects("", currentObjects);
+
+            if (sourceObjects.Count > 0 && targetObjects.Count > 0)
+            {
+                if (!isAvailableButtons)
+                {
+                    StartButton.Background = new SolidColorBrush(Colors.White);
+                    ManualStartButton.Background = new SolidColorBrush(Colors.White);
+                }
+
+                isAvailableButtons = true;
+                isAvailableScrolls = true;
+            }
+            else
+            {
+                if (isAvailableButtons)
+                {
+                    StartButton.Background = new SolidColorBrush(Colors.LightGray);
+                    ManualStartButton.Background = new SolidColorBrush(Colors.LightGray);
+                }
+
+                isAvailableButtons = false;
+                isAvailableScrolls = false;
+            }
+        }
+
+        private void StartButton_Click(object sender, RoutedEventArgs e)
+        {
+            isMoving = true;
+            isAvailableButtons = false;
+            isAvailableScrolls = false;
+
+            scrollBar.Value = 0;
+
+            var t = new Thread(() => DoMoving());
+            t.Start();
+        }
+
+        private void ManualStartButton_Click(object sender, RoutedEventArgs e)
+        {
+            isMoving = !isMoving;
+            isAvailableButtons = false;
+        }
+
+        private void DoMoving()
+        {
+            var lines = GetLines();
+
+            Action<double, Tuple<CustomLine, Matrix, Matrix>> func = (double t, Tuple<CustomLine, Matrix, Matrix> l) =>
+            {
+                var newX1 = l.Item2.M11 * (1 - t) + l.Item3.M11 * t;
+                var newY1 = l.Item2.M21 * (1 - t) + l.Item3.M21 * t;
+                var newZ1 = l.Item2.OffsetX * (1 - t) + l.Item3.OffsetX * t;
+
+                var newX2 = l.Item2.M12 * (1 - t) + l.Item3.M12 * t;
+                var newY2 = l.Item2.M22 * (1 - t) + l.Item3.M22 * t;
+                var newZ2 = l.Item2.OffsetY * (1 - t) + l.Item3.OffsetY * t;
+
+
+                l.Item1.MoveTo(newX1, newX2, newY1, newY2, newZ1, newZ2);
+            };
+
+            _disp.Invoke(() =>
+            {
+                addLinesActon.Invoke(lines.Select(x => x.Item1));
+            });
+
+            for (double t = 0; t < 1; t+=0.1)
+            {
+                _disp.Invoke(() =>
+                {
+                    foreach(var l in lines)
+                    {
+                        func(t, l);
+                    }
+                });
+                Thread.Sleep(100);
+            }
+
+            _disp.Invoke(() =>
+            {
+                foreach (var l in lines)
+                {
+                    func(1, l);
+                }
+                Thread.Sleep(100);
+                removeLinesActon.Invoke(lines.Select(x => x.Item1));
+                isMoving = false;
+            });
+        }
+
+        private List<Tuple<CustomLine, Matrix, Matrix>> GetLines()
+        {
+            var sourceLines = new List<CustomLine>();
+
+            foreach (var o in sourceObjects)
+            {
+                if (o is CustomLine)
+                {
+                    sourceLines.Add(o as CustomLine);
+                }
+                if (o is CustomGroup)
+                {
+                    sourceLines.AddRange((o as CustomGroup).GetShapes().Cast<CustomLine>());
+                }
+            }
+
+            var targetLines = new List<CustomLine>();
+
+            foreach (var o in targetObjects)
+            {
+                if (o is CustomLine)
+                {
+                    targetLines.Add(o as CustomLine);
+                }
+                if (o is CustomGroup)
+                {
+                    targetLines.AddRange((o as CustomGroup).GetShapes().Cast<CustomLine>());
+                }
+            }
+
+
+            SolidColorBrush brush = null;
+            _disp.Invoke(() =>
+            {
+                brush = new SolidColorBrush(Colors.Orange);
+            });
+
+
+
+            List<Tuple<CustomLine, Matrix, Matrix>> lines = new List<Tuple<CustomLine, Matrix, Matrix>>();
+
+            if (sourceLines.Count > targetLines.Count)
+            {
+                for (var i = 0; i < targetLines.Count; i++)
+                {
+                    var index = rnd.Next(sourceLines.Count);
+                    var line = sourceLines[index];
+                    var targetLine = targetLines[i];
+                    _disp.Invoke(() =>
+                    {
+                        var li = new CustomLine(_disp, brush, line.Point1, line.Point2);
+                        lines.Add(new Tuple<CustomLine, Matrix, Matrix>(
+                            li,
+                            new Matrix(
+                                line.Point1.X, line.Point2.X,
+                                line.Point1.Y, line.Point2.Y,
+                                line.Point1.Z, line.Point2.Z
+                            ),
+                            new Matrix(
+                                targetLine.Point1.X, targetLine.Point2.X,
+                                targetLine.Point1.Y, targetLine.Point2.Y,
+                                targetLine.Point1.Z, targetLine.Point2.Z
+                            )
+                        ));
+                    });
+                }
+            }
+            else
+            {
+                if (sourceLines.Count < targetLines.Count)
+                {
+                    for (var i = 0; i < sourceLines.Count; i++)
+                    {
+                        var line = sourceLines[i];
+                        var targetLine = targetLines[i];
+
+                        _disp.Invoke(() =>
+                        {
+                            lines.Add(new Tuple<CustomLine, Matrix, Matrix>(
+                                new CustomLine(brush, line.Point1, line.Point2),
+                                new Matrix(
+                                    line.Point1.X, line.Point2.X,
+                                    line.Point1.Y, line.Point2.Y,
+                                    line.Point1.Z, line.Point2.Z
+                                ),
+                                new Matrix(
+                                    targetLine.Point1.X, targetLine.Point2.X,
+                                    targetLine.Point1.Y, targetLine.Point2.Y,
+                                    targetLine.Point1.Z, targetLine.Point2.Z
+                                )
+                            ));
+                        });
+
+                    }
+
+                    for (var i = sourceLines.Count; i < targetLines.Count; i++)
+                    {
+                        var index = rnd.Next(sourceLines.Count);
+                        var line = sourceLines[index];
+                        var targetLine = targetLines[i];
+
+                        _disp.Invoke(() =>
+                        {
+                            lines.Add(new Tuple<CustomLine, Matrix, Matrix>(
+                                new CustomLine(brush, line.Point1, line.Point2),
+                                new Matrix(
+                                    line.Point1.X, line.Point2.X,
+                                    line.Point1.Y, line.Point2.Y,
+                                    line.Point1.Z, line.Point2.Z
+                                ),
+                                new Matrix(
+                                    targetLine.Point1.X, targetLine.Point2.X,
+                                    targetLine.Point1.Y, targetLine.Point2.Y,
+                                    targetLine.Point1.Z, targetLine.Point2.Z
+                                )
+                            ));
+                        });
+                    }
+                }
+                else
+                {
+                    for (var i = 0; i < targetLines.Count; i++)
+                    {
+                        var index = rnd.Next(sourceLines.Count);
+                        var line = sourceLines[i];
+                        var targetLine = targetLines[i];
+                        _disp.Invoke(() =>
+                        {
+                            lines.Add(new Tuple<CustomLine, Matrix, Matrix>(
+                                new CustomLine(brush, line.Point1, line.Point2),
+                                new Matrix(
+                                    line.Point1.X, line.Point2.X,
+                                    line.Point1.Y, line.Point2.Y,
+                                    line.Point1.Z, line.Point2.Z
+                                ),
+                                new Matrix(
+                                    targetLine.Point1.X, targetLine.Point2.X,
+                                    targetLine.Point1.Y, targetLine.Point2.Y,
+                                    targetLine.Point1.Z, targetLine.Point2.Z
+                                )
+                            ));
+                        });
+                    }
+                }
+            }
+
+            return lines;
         }
     }
 }

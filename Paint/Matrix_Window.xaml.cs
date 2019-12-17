@@ -240,7 +240,6 @@ namespace Paint
                     Paramters_Tab_Textblock.Background = new SolidColorBrush(Colors.Purple);
                 }
             }
-
         }
 
         private void ConvertFromParametersToMatrix(Matrix3D matrix)
@@ -312,11 +311,6 @@ namespace Paint
             ConvertFromParametersToMatrix(rotateToOx * rotateToOy * rotateToOz);
 
             matrixConverAction.Invoke(rotateToOx * rotateToOy * rotateToOz);
-        }
-
-        private void CheckBox_Checked(object sender, RoutedEventArgs e)
-        {
-            Topmost = (sender as CheckBox).IsChecked == true;
         }
     }
 }

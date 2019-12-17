@@ -91,12 +91,30 @@ namespace Paint
 
                 var line = InitLine(x1, y1, x2, y2, z1, z2);
                 Canvas.Children.Add(line);
-                line.Select();
                 selectedObjects.Add(line);
             }
 
             GroupSelected_Click(null, null);
+            selectedObjects[0].UnSelect();
+            selectedObjects.Clear();
             LocalCordSystem_checkbox.IsChecked = true;
+
+            for (byte i = 0; i < arr.Length; i += 2)
+            {
+                int x1 = arr[i][0];
+                int y1 = arr[i][1];
+                int z1 = arr[i][2];
+
+                int x2 = arr[i + 1][0];
+                int y2 = arr[i + 1][1];
+                int z2 = arr[i + 1][2];
+
+                var line = InitLine(x1, y1, x2, y2, z1, z2);
+                Canvas.Children.Add(line);
+                line.Select();
+                selectedObjects.Add(line);
+            }
+            GroupSelected_Click(null, null);
         }
 
         static Random rnd = new Random();
@@ -137,6 +155,9 @@ namespace Paint
 
                 o.UnSelect();
             }
+
+            morphWindow?.ClearAll();
+
             selectedObjects.Clear();
             Canvas.Children.Clear();
         }
@@ -185,6 +206,7 @@ namespace Paint
                 }
 
                 selectedObjects.Remove(o);
+                morphWindow?.RemoveObject(o);
             }
         }
 
@@ -194,6 +216,8 @@ namespace Paint
 
             var group = new CustomGroup(selectedObjects);
             group.Select();
+
+            morphWindow?.ClearObjects();
 
             selectedObjects.Clear();
             selectedObjects.Add(group);
@@ -205,9 +229,17 @@ namespace Paint
             {
                 if (o is IMyGroup)
                 {
-                    selectedObjects.AddRange((o as IMyGroup).GetObjects());
+                    var objects = (o as IMyGroup).GetObjects();
+
+                    morphWindow?.AddRangeObjects(objects);
+
+                    selectedObjects.AddRange(objects);
+                    
+
                     (o as IMyGroup).UnGroup();
                     selectedObjects.Remove(o);
+
+                    morphWindow?.RemoveObject(o);
                 }
             }
         }
@@ -254,7 +286,24 @@ namespace Paint
         {
             if (morphWindow == null)
             {
-                morphWindow = new Morph_Window();
+                morphWindow = new Morph_Window(Dispatcher,selectedObjects, (IEnumerable < IMyObject > objects) => {
+                    selectedObjects.Clear();
+                    selectedObjects.AddRange(objects);
+                },
+                (IEnumerable<CustomLine> objects) =>
+                {
+                    foreach(var o in objects)
+                    {
+                        Canvas.Children.Add(o);
+                    }
+                },
+                (IEnumerable<CustomLine> objects) =>
+                {
+                    foreach (var o in objects)
+                    {
+                        Canvas.Children.Remove(o);
+                    }
+                });
                 morphWindow.Closed += (object s, EventArgs ev) =>
                 {
                     infoWindow = null;
@@ -552,11 +601,13 @@ namespace Paint
                 {
                     parent.UnSelect();
                     selectedObjects.Remove(parent);
+                    morphWindow?.RemoveObject(parent);
                 }
                 else
                 {
                     parent.Select();
                     selectedObjects.Add(parent);
+                    morphWindow?.AddObject(parent);
                 }
             }
         }
@@ -618,6 +669,7 @@ namespace Paint
             {
                 o.ConvertByMatrix(matrix);
             }
+            morphWindow?.UpdateVisual();
         }
 
         #endregion Lines
@@ -632,6 +684,8 @@ namespace Paint
             {
                 o.SaveNewCords();
             }
+
+            morphWindow?.UpdateVisual();
         }
 
         private void ResetCordOfObjects()
@@ -640,6 +694,8 @@ namespace Paint
             {
                 o.ResetOriginalCords();
             }
+
+            morphWindow?.UpdateVisual();
         }
 
         private void GenerateCordSyst()
@@ -903,6 +959,7 @@ namespace Paint
 
             infoWindow?.SetPoint(pos);
             infoWindow?.SetObjects(selectedObjects);
+
             SetPointsInfo(pos, onLine);
 
             if (e.LeftButton == MouseButtonState.Pressed)
@@ -911,6 +968,7 @@ namespace Paint
                 {
                     MoveCordSystTo(e.GetPosition(Canvas));
                     e.Handled = true;
+                    morphWindow?.UpdateVisual();
                     return;
                 }
 
@@ -959,7 +1017,9 @@ namespace Paint
                 }
 
                 lastMousePosition = position;
+                morphWindow?.UpdateVisual();
             };
+
         }
 
         private void Canvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)

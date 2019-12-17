@@ -9,6 +9,7 @@ using System.Windows;
 using System.Runtime.InteropServices;
 using Paint.interfaces;
 using System.Windows.Media.Media3D;
+using System.Windows.Threading;
 
 namespace Paint
 {
@@ -21,10 +22,42 @@ namespace Paint
 
         public CustomLine(Brush brush) : base()
         {
+            _disp = Dispatcher;
             this.Stroke = brush;
             CacheDefiningGeometry();
         }
 
+        public CustomLine(Brush brush, Point3D p1, Point3D p2) : base()
+        {
+            _disp = Dispatcher;
+            this.Stroke = brush;
+            X1 = p1.X;
+            Y1 = p1.Y;
+            Z1 = p1.Z;
+            X2 = p2.X;
+            Y2 = p2.Y;
+            Z2 = p2.Z;
+            CacheDefiningGeometry();
+        }
+
+        public CustomLine(Dispatcher disp, Brush brush, Point3D p1, Point3D p2) : base()
+        {
+            _disp = disp;
+            this.Stroke = brush;
+            X1 = p1.X;
+            Y1 = p1.Y;
+            Z1 = p1.Z;
+            X2 = p2.X;
+            Y2 = p2.Y;
+            Z2 = p2.Z;
+            CacheDefiningGeometry();
+        }
+
+        Dispatcher _disp;
+
+
+        public Point3D Point1 => new Point3D(X1, Y1, Z1);
+        public Point3D Point2 => new Point3D(X2, Y2, Z2);
 
         public bool IsPressed_Point_1 = false;
         public bool IsPressed_Point_2 = false;
@@ -69,9 +102,12 @@ namespace Paint
         {
             if (brush != null)
             {
-                var valueColor = ((SolidColorBrush)brush).Color;
-                this.brush = new SolidColorBrush(valueColor);
-                this.selectedBrush = new SolidColorBrush(valueColor.InvertedColorNotVisualEqual());
+                _disp.Invoke(() =>
+                {
+                    Color valueColor = ((SolidColorBrush)brush).Color;
+                    this.brush = new SolidColorBrush(valueColor);
+                    this.selectedBrush = new SolidColorBrush(valueColor.InvertedColorNotVisualEqual());
+                });
             }
 
             base.Stroke = GetStroke();

@@ -77,10 +77,5 @@ namespace Paint
 
             return str;
         }
-
-        private void CheckBox_Checked(object sender, RoutedEventArgs e)
-        {
-            Topmost = (sender as CheckBox).IsChecked == true;
-        }
     }
 }

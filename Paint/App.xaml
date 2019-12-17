@@ -14,12 +14,13 @@
             <Setter Property="Margin" Value="5" />
             <Setter Property="Padding" Value="2" />
             <Setter Property="Foreground" Value="Black" />
+            <Setter Property="Background" Value="White" />
             <Setter Property="FontSize" Value="22" />
             <Setter Property="FontFamily" Value="Georgia" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border CornerRadius="10" Background="White" >
+                        <Border CornerRadius="10" Background="{TemplateBinding Background}" >
                             <ContentPresenter x:Name="contentPresenter" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                         </Border>
                     </ControlTemplate>

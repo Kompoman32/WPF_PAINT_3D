@@ -28,7 +28,7 @@
                 <Canvas x:Name="Canvas" Background="Transparent" MouseMove="Canvas_MouseMove" MouseLeftButtonDown="Canvas_MouseLeftButtonDown" MouseLeftButtonUp="Canvas_MouseLeftButtonUp" PreviewMouseRightButtonDown="Canvas_PreviewMouseRightButtonDown" PreviewMouseRightButtonUp="Canvas_PreviewMouseRightButtonUp">
                 
                 </Canvas>
-                <TextBlock x:Name="HidaToolBarButton" MouseUp="HidaToolBarButton_MouseUp"  HorizontalAlignment="Right" FontSize="25">❯</TextBlock>
+                <TextBlock x:Name="HidaToolBarButton" Height="40" VerticalAlignment="Top" MouseUp="HidaToolBarButton_MouseUp"  HorizontalAlignment="Right" FontSize="25">❯</TextBlock>
             </Grid>
             <Grid x:Name="Toolbar" Grid.Column="1" Width="90" Visibility="Visible">
                 <Grid Background="BlueViolet">

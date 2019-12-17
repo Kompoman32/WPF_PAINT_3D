@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Paint"
         mc:Ignorable="d"
+        Topmost="{Binding ElementName=topMostCheckbox, Path=IsChecked}"
         MinWidth="420"
         MinHeight="500"
         Title="Info" Height="500" Width="420">
@@ -29,7 +30,7 @@
                 <Label Grid.Row="1" Grid.Column="1" Name="pointOnLine" Foreground="White">( 0.00 | 0.00 )</Label>
             </Grid>
         </WrapPanel>
-        <CheckBox HorizontalAlignment="Right" Checked="CheckBox_Checked" Unchecked="CheckBox_Checked" Foreground="White">Закрепить</CheckBox>
+        <CheckBox Name="topMostCheckbox" Grid.Column="1" HorizontalAlignment="Right" Foreground="White">Закрепить</CheckBox>
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" Margin="10 10 10 10">
             <TextBlock x:Name="LinesBlock" Background="White">
                 
