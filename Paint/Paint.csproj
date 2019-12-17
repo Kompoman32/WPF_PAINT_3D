@@ -102,12 +102,19 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Morph_Window.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Matrix_Window.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Morph_Window.xaml.cs">
+      <DependentUpon>Morph_Window.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Matrix_Window.xaml.cs">
       <DependentUpon>Matrix_Window.xaml</DependentUpon>
     </Compile>
