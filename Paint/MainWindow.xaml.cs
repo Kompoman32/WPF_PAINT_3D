@@ -38,6 +38,11 @@ namespace Paint
             InitializeComponent();
             GenerateCordSyst();
 
+            GenerateStartedCubes();
+        }
+
+        private void GenerateStartedCubes()
+        {
             MoveCordSystTo(new Point(200, 200));
 
             int[][] arr = {
@@ -81,13 +86,13 @@ namespace Paint
 
             for (byte i = 0; i < arr.Length; i += 2)
             {
-                int x1 = arr[i][0] ;
-                int y1 = arr[i][1] ;
-                int z1 = arr[i][2] ;
+                int x1 = arr[i][0];
+                int y1 = arr[i][1];
+                int z1 = arr[i][2];
 
-                int x2 = arr[i + 1][0] ;
-                int y2 = arr[i + 1][1] ;
-                int z2 = arr[i + 1][2] ;
+                int x2 = arr[i + 1][0];
+                int y2 = arr[i + 1][1];
+                int z2 = arr[i + 1][2];
 
                 var line = InitLine(x1, y1, x2, y2, z1, z2);
                 Canvas.Children.Add(line);
@@ -101,12 +106,12 @@ namespace Paint
 
             for (byte i = 0; i < arr.Length; i += 2)
             {
-                int x1 = arr[i][0];
-                int y1 = arr[i][1];
+                int x1 = arr[i][0] + 300;
+                int y1 = arr[i][1] + 50;
                 int z1 = arr[i][2];
 
-                int x2 = arr[i + 1][0];
-                int y2 = arr[i + 1][1];
+                int x2 = arr[i + 1][0] + 300;
+                int y2 = arr[i + 1][1] + 50;
                 int z2 = arr[i + 1][2];
 
                 var line = InitLine(x1, y1, x2, y2, z1, z2);
@@ -306,7 +311,7 @@ namespace Paint
                 });
                 morphWindow.Closed += (object s, EventArgs ev) =>
                 {
-                    infoWindow = null;
+                    morphWindow = null;
                 };
                 morphWindow.Show();
             }
@@ -372,7 +377,7 @@ namespace Paint
             var ok = saveDialog.ShowDialog();
             if (ok == true)
             {
-                var path = SaveLoad.Save(saveDialog.FileName, Canvas.Children.Cast<CustomLine>(), CordCenter, CordSystem_checkbox.IsChecked == true);
+                var path = SaveLoad.Save(saveDialog.FileName, Canvas.Children.Cast<CustomLine>().Where(x => !x.IsFake), CordCenter, CordSystem_checkbox.IsChecked == true);
 
                 MessageBox.Show($"Путь сохранения: {System.IO.Path.GetFullPath(path)}");
             }

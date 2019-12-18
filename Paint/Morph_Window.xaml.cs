@@ -47,20 +47,32 @@ namespace Paint
             currentObjects = this.sourceObjects;
             currentTextBLock = SourceLinesBlock;
             UpdateVisual();
-
-            DataContext = this;
         }
 
         string defaultOffset = "    ";
 
 
         bool isMoving = false;
-        bool isAvailableButtons = false;
-        bool isAvailableScrolls= false;
+
+        Thread movingThread;
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (isMoving) e.Cancel = true;
+            if (isMoving)
+            {
+                if (scrollGrid.IsEnabled)
+                {
+                    ManualStartButton_Click(null, null);
+                }
+                else
+                {
+                    if (movingThread != null)
+                    {
+                        movingThread.Join();
+                    }
+                }
+                
+            }
         }
 
         List<IMyObject> currentObjects;
@@ -175,77 +187,87 @@ namespace Paint
 
             if (sourceObjects.Count > 0 && targetObjects.Count > 0)
             {
-                if (!isAvailableButtons)
-                {
-                    StartButton.Background = new SolidColorBrush(Colors.White);
-                    ManualStartButton.Background = new SolidColorBrush(Colors.White);
-                }
+                StartButton.Background = new SolidColorBrush(Colors.White);
+                ManualStartButton.Background = new SolidColorBrush(Colors.White);
 
-                isAvailableButtons = true;
-                isAvailableScrolls = true;
+                StartButton.IsEnabled = ManualStartButton.IsEnabled = true;
+                scrollGrid.IsEnabled = true;
             }
             else
             {
-                if (isAvailableButtons)
-                {
-                    StartButton.Background = new SolidColorBrush(Colors.LightGray);
-                    ManualStartButton.Background = new SolidColorBrush(Colors.LightGray);
-                }
+                StartButton.Background = new SolidColorBrush(Colors.LightGray);
+                ManualStartButton.Background = new SolidColorBrush(Colors.LightGray);
 
-                isAvailableButtons = false;
-                isAvailableScrolls = false;
-            }
+                StartButton.IsEnabled = ManualStartButton.IsEnabled = false;
+                scrollGrid.IsEnabled = false;
+            }           
         }
 
         private void StartButton_Click(object sender, RoutedEventArgs e)
         {
             isMoving = true;
-            isAvailableButtons = false;
-            isAvailableScrolls = false;
+            StartButton.IsEnabled = ManualStartButton.IsEnabled = false;
+            StartButton.Background = new SolidColorBrush(Colors.LightGray);
+            ManualStartButton.Background = new SolidColorBrush(Colors.LightGray);
+            DataContext = this;
 
             scrollBar.Value = 0;
 
-            var t = new Thread(() => DoMoving());
-            t.Start();
+            movingThread = new Thread(() => DoMoving());
+            movingThread.Start();
         }
+
+        List<Tuple<CustomLine, Matrix, Matrix>> currentLines;
 
         private void ManualStartButton_Click(object sender, RoutedEventArgs e)
         {
-            isMoving = !isMoving;
-            isAvailableButtons = false;
+            if (isMoving)
+            {
+                isMoving = false;
+                ManualStartButton.Content = "Анимировать вручную";
+                StartButton.IsEnabled = true;
+                StartButton.Background = new SolidColorBrush(Colors.White);
+                scrollGrid.IsEnabled = false;
+                removeLinesActon.Invoke(currentLines.Select(x => x.Item1));
+                currentLines = null;
+                return;
+            }
+
+            isMoving = true;
+
+            StartButton.IsEnabled = false;
+            StartButton.Background = new SolidColorBrush(Colors.LightGray);
+            ManualStartButton.Content = "Остановить анимирование";
+
+            DataContext = this;
+
+            scrollGrid.IsEnabled = true;
+
+            scrollBar.Value = 0;
+
+            currentLines = GetLines();
+            addLinesActon.Invoke(currentLines.Select(x => x.Item1));
         }
 
         private void DoMoving()
         {
             var lines = GetLines();
 
-            Action<double, Tuple<CustomLine, Matrix, Matrix>> func = (double t, Tuple<CustomLine, Matrix, Matrix> l) =>
-            {
-                var newX1 = l.Item2.M11 * (1 - t) + l.Item3.M11 * t;
-                var newY1 = l.Item2.M21 * (1 - t) + l.Item3.M21 * t;
-                var newZ1 = l.Item2.OffsetX * (1 - t) + l.Item3.OffsetX * t;
-
-                var newX2 = l.Item2.M12 * (1 - t) + l.Item3.M12 * t;
-                var newY2 = l.Item2.M22 * (1 - t) + l.Item3.M22 * t;
-                var newZ2 = l.Item2.OffsetY * (1 - t) + l.Item3.OffsetY * t;
-
-
-                l.Item1.MoveTo(newX1, newX2, newY1, newY2, newZ1, newZ2);
-            };
-
             _disp.Invoke(() =>
             {
                 addLinesActon.Invoke(lines.Select(x => x.Item1));
             });
 
-            for (double t = 0; t < 1; t+=0.1)
+            for (double t = 0; t < 1; t+=0.05)
             {
                 _disp.Invoke(() =>
                 {
+                    t = double.Parse(t.ToString("#0.0#"));
                     foreach(var l in lines)
                     {
-                        func(t, l);
+                        MoveLine(t, l);
                     }
+                    scrollBar.Value = t;
                 });
                 Thread.Sleep(100);
             }
@@ -254,11 +276,15 @@ namespace Paint
             {
                 foreach (var l in lines)
                 {
-                    func(1, l);
+                    MoveLine(1, l);
                 }
+                scrollBar.Value = 1;
                 Thread.Sleep(100);
                 removeLinesActon.Invoke(lines.Select(x => x.Item1));
                 isMoving = false;
+                StartButton.IsEnabled = ManualStartButton.IsEnabled = true;
+                StartButton.Background = new SolidColorBrush(Colors.White);
+                ManualStartButton.Background = new SolidColorBrush(Colors.White);
             });
         }
 
@@ -312,20 +338,7 @@ namespace Paint
                     var targetLine = targetLines[i];
                     _disp.Invoke(() =>
                     {
-                        var li = new CustomLine(_disp, brush, line.Point1, line.Point2);
-                        lines.Add(new Tuple<CustomLine, Matrix, Matrix>(
-                            li,
-                            new Matrix(
-                                line.Point1.X, line.Point2.X,
-                                line.Point1.Y, line.Point2.Y,
-                                line.Point1.Z, line.Point2.Z
-                            ),
-                            new Matrix(
-                                targetLine.Point1.X, targetLine.Point2.X,
-                                targetLine.Point1.Y, targetLine.Point2.Y,
-                                targetLine.Point1.Z, targetLine.Point2.Z
-                            )
-                        ));
+                        lines.Add(GetLine(brush, line.Point1, line.Point2, targetLine.Point1, targetLine.Point2));
                     });
                 }
             }
@@ -340,19 +353,7 @@ namespace Paint
 
                         _disp.Invoke(() =>
                         {
-                            lines.Add(new Tuple<CustomLine, Matrix, Matrix>(
-                                new CustomLine(brush, line.Point1, line.Point2),
-                                new Matrix(
-                                    line.Point1.X, line.Point2.X,
-                                    line.Point1.Y, line.Point2.Y,
-                                    line.Point1.Z, line.Point2.Z
-                                ),
-                                new Matrix(
-                                    targetLine.Point1.X, targetLine.Point2.X,
-                                    targetLine.Point1.Y, targetLine.Point2.Y,
-                                    targetLine.Point1.Z, targetLine.Point2.Z
-                                )
-                            ));
+                            lines.Add(GetLine(brush, line.Point1, line.Point2, targetLine.Point1, targetLine.Point2));
                         });
 
                     }
@@ -365,19 +366,7 @@ namespace Paint
 
                         _disp.Invoke(() =>
                         {
-                            lines.Add(new Tuple<CustomLine, Matrix, Matrix>(
-                                new CustomLine(brush, line.Point1, line.Point2),
-                                new Matrix(
-                                    line.Point1.X, line.Point2.X,
-                                    line.Point1.Y, line.Point2.Y,
-                                    line.Point1.Z, line.Point2.Z
-                                ),
-                                new Matrix(
-                                    targetLine.Point1.X, targetLine.Point2.X,
-                                    targetLine.Point1.Y, targetLine.Point2.Y,
-                                    targetLine.Point1.Z, targetLine.Point2.Z
-                                )
-                            ));
+                            lines.Add(GetLine(brush, line.Point1, line.Point2, targetLine.Point1, targetLine.Point2));
                         });
                     }
                 }
@@ -390,25 +379,57 @@ namespace Paint
                         var targetLine = targetLines[i];
                         _disp.Invoke(() =>
                         {
-                            lines.Add(new Tuple<CustomLine, Matrix, Matrix>(
-                                new CustomLine(brush, line.Point1, line.Point2),
-                                new Matrix(
-                                    line.Point1.X, line.Point2.X,
-                                    line.Point1.Y, line.Point2.Y,
-                                    line.Point1.Z, line.Point2.Z
-                                ),
-                                new Matrix(
-                                    targetLine.Point1.X, targetLine.Point2.X,
-                                    targetLine.Point1.Y, targetLine.Point2.Y,
-                                    targetLine.Point1.Z, targetLine.Point2.Z
-                                )
-                            ));
+                            lines.Add(GetLine(brush, line.Point1, line.Point2, targetLine.Point1, targetLine.Point2));
                         });
                     }
                 }
             }
 
             return lines;
+        }
+
+        private Tuple<CustomLine, Matrix, Matrix> GetLine(Brush brush, Point3D point1, Point3D point2, Point3D targPoint1, Point3D targPoint2)
+        {
+            return new Tuple<CustomLine, Matrix, Matrix>(
+                                new CustomLine(brush, point1, point2) { IsFake = true },
+                                new Matrix(
+                                    point1.X, point2.X,
+                                    point1.Y, point2.Y,
+                                    point1.Z, point2.Z
+                                ),
+                                new Matrix(
+                                    targPoint1.X, targPoint2.X,
+                                    targPoint1.Y, targPoint2.Y,
+                                    targPoint1.Z, targPoint2.Z
+                                )
+                            );
+        }
+
+        private void MoveLine(double t, Tuple<CustomLine, Matrix, Matrix> l)
+        {
+            var newX1 = l.Item2.M11 * (1 - t) + l.Item3.M11 * t;
+            var newY1 = l.Item2.M21 * (1 - t) + l.Item3.M21 * t;
+            var newZ1 = l.Item2.OffsetX * (1 - t) + l.Item3.OffsetX * t;
+
+            var newX2 = l.Item2.M12 * (1 - t) + l.Item3.M12 * t;
+            var newY2 = l.Item2.M22 * (1 - t) + l.Item3.M22 * t;
+            var newZ2 = l.Item2.OffsetY * (1 - t) + l.Item3.OffsetY * t;
+
+
+            l.Item1.MoveTo(newX1, newX2, newY1, newY2, newZ1, newZ2);
+        }
+
+        private void scrollBar_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (scrollGrid.IsEnabled && currentLines != null)
+            {
+                scrollBar.Value = double.Parse(scrollBar.Value.ToString("#0.0000"));
+
+                foreach (var l in currentLines)
+                {
+                    MoveLine(scrollBar.Value, l);
+                }
+            }
         }
     }
 }

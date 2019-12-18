@@ -36,11 +36,11 @@
             </TextBlock>
         </ScrollViewer>
 
-        <Button x:Name="StartButton" Click="StartButton_Click" Grid.Column="0" Grid.Row="2" Height="35" Width="120" IsEnabled="{Binding isAvailableButtons, Mode = TwoWay}" Background="LightGray" FontSize="16">Анимировать</Button>
-        <Button x:Name="ManualStartButton" Click="ManualStartButton_Click" Grid.Column="1" Grid.Row="2" Height="35" Width="190" IsEnabled="{Binding isAvailableButtons, Mode = TwoWay}" Background="LightGray" FontSize="16" >Анимировать вручную</Button>
-
-        <Grid Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="2" IsEnabled="{Binding isAvailableScrolls, Mode = TwoWay}">
-            <ScrollBar x:Name="scrollBar" Orientation="Horizontal" Height="15" Minimum="0" Maximum="1" SmallChange="0.01" LargeChange="0.1" Background="LightGray" FontSize="16" Margin="40 30 40 0" ></ScrollBar>
+        <Button x:Name="StartButton" Click="StartButton_Click" Grid.Column="0" Grid.Row="2" Height="35" Width="120" IsEnabled="False" Background="LightGray" FontSize="16">Анимировать</Button>
+        <Button x:Name="ManualStartButton" Click="ManualStartButton_Click" Grid.Column="1" Grid.Row="2" Height="35" Width="190" IsEnabled="False" Background="LightGray" FontSize="16" >Анимировать вручную</Button>
+        
+        <Grid Name="scrollGrid" Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="2" IsEnabled="False">
+            <ScrollBar x:Name="scrollBar" Orientation="Horizontal" Height="15" Minimum="0" Maximum="1" SmallChange="0.01" LargeChange="0.1" ValueChanged="scrollBar_ValueChanged" Background="LightGray" FontSize="16" Margin="40 30 40 0" ></ScrollBar>
             <Label  Foreground="White" Margin="5 30 0 0" HorizontalAlignment="Left" VerticalContentAlignment="Center"  Content="{Binding ElementName=scrollBar, Path=Minimum}"/>
             <Label  Foreground="White"  Margin="0 30 0 5" HorizontalAlignment="Right" VerticalContentAlignment="Center" Content="{Binding ElementName=scrollBar, Path=Maximum}"/>
             <Label  Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Top" VerticalContentAlignment="Center" Content="{Binding ElementName=scrollBar, Path=Value}"/>

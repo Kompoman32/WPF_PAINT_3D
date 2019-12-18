@@ -55,6 +55,7 @@ namespace Paint
 
         Dispatcher _disp;
 
+        public bool IsFake = false;
 
         public Point3D Point1 => new Point3D(X1, Y1, Z1);
         public Point3D Point2 => new Point3D(X2, Y2, Z2);
