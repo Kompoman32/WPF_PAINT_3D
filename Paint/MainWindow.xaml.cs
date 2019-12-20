@@ -38,6 +38,7 @@ namespace Paint
             InitializeComponent();
             GenerateCordSyst();
 
+            
             GenerateStartedCubes();
         }
 
@@ -128,6 +129,7 @@ namespace Paint
         Info infoWindow;
         Matrix_Window matrixWindow;
         Morph_Window morphWindow;
+        AdditionalLines_Window additionLinesWindow;
 
         #region Кнопки
         private void HidaToolBarButton_MouseUp(object sender, MouseButtonEventArgs e)
@@ -162,6 +164,7 @@ namespace Paint
             }
 
             morphWindow?.ClearAll();
+            additionLinesWindow?.Reset();
 
             selectedObjects.Clear();
             Canvas.Children.Clear();
@@ -318,6 +321,23 @@ namespace Paint
             else
             {
                 morphWindow.Focus();
+            }
+        }
+
+        private void OpenAdditionalLines_Click(object sender, RoutedEventArgs e)
+        {
+            if (additionLinesWindow == null)
+            {
+                additionLinesWindow = new AdditionalLines_Window(() => selectedObjects);
+                additionLinesWindow.Closed += (object s, EventArgs ev) =>
+                {
+                    additionLinesWindow = null;
+                };
+                additionLinesWindow.Show();
+            }
+            else
+            {
+                additionLinesWindow.Focus();
             }
         }
 
@@ -590,6 +610,8 @@ namespace Paint
             }
             else if (ea.ClickCount == 2)
             {
+                additionLinesWindow?.Reset();
+
                 if (parent != null)
                 {
                     while (parent.GetParent() != null)
@@ -1034,6 +1056,59 @@ namespace Paint
 
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            if (additionLinesWindow != null && additionLinesWindow.GetValue() > 0)
+            {
+                var val = additionLinesWindow.GetValue();
+                var pos = e.GetPosition(Canvas);
+                pos.Offset(-CordCenter.X, -CordCenter.Y);
+                switch (val) {
+                    case 1:
+                        {
+                            if (selectedObjects.Where(x => x is CustomLine).Count() != 1) break;
+                            var line = selectedObjects.First() as CustomLine;
+                            var newPoint =line.GetPerpendicularPoint(pos);
+
+                            var newLine = InitLine(pos.X, pos.Y, newPoint.X, -newPoint.Y);
+                            newLine.Stroke = new SolidColorBrush(Colors.Red);
+                            Canvas.Children.Add(newLine);
+                        }
+                        break;
+                    case 2:
+                        {
+                            if (selectedObjects.Where(x => x is CustomLine).Count() != 1) break;
+                            var line = selectedObjects.First() as CustomLine;
+                            var newPoint = line.GetMedianPoint();
+
+                            var newLine = InitLine(pos.X, pos.Y, newPoint.X, newPoint.Y);
+                            newLine.Stroke = new SolidColorBrush(Colors.Red);
+                            Canvas.Children.Add(newLine);
+                        }
+                        break;
+                    case 3:
+                        {
+                            if (selectedObjects.Where(x => x is CustomLine).Count() != 2) break;
+                            var firstLine = selectedObjects.First() as CustomLine;
+                            var secondLine = selectedObjects.Last() as CustomLine;
+                            var ok = Extention.CheckBisector(firstLine, secondLine);
+                            if (!ok)
+                            {
+                                MessageBox.Show("Прямые паралельны или не лежат в одной плоскости");
+                                break;
+                            }
+                            var newPoints = Extention.GetBisectorPoint(firstLine, secondLine);
+
+                            var point1 = newPoints.Item1;
+                            var point2 = newPoints.Item2;
+
+                            var newLine = InitLine(point1.X, point1.Y, point2.X, point2.Y);
+                            newLine.Stroke = new SolidColorBrush(Colors.Red);
+                            Canvas.Children.Add(newLine);
+                        }
+                        break;
+                }
+                e.Handled = true;
+            }
+            else 
             if (isChoosingCordPosition)
             {
                 MoveCordSystTo(e.GetPosition(Canvas));
@@ -1101,6 +1176,10 @@ namespace Paint
             if (morphWindow != null)
             {
                 morphWindow.Close();
+            }
+            if (additionLinesWindow != null)
+            {
+                additionLinesWindow.Close();
             }
         }
     }

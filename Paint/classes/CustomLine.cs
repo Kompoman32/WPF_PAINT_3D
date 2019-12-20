@@ -374,12 +374,12 @@ namespace Paint
 
         public Equation(Point3D p1, Point3D p2)
         {
-            double X1 = p1.X - MainWindow.CanvasMargin;
-            double Y1 = p1.Y - MainWindow.CanvasMargin;
-            double Z1 = p1.Z - MainWindow.CanvasMargin;
-            double X2 = p2.X - MainWindow.CanvasMargin;
-            double Y2 = p2.Y - MainWindow.CanvasMargin;
-            double Z2 = p2.Z - MainWindow.CanvasMargin;
+            double X1 = p1.X ;/*- MainWindow.CanvasMargin;*/
+            double Y1 = p1.Y ;/*- MainWindow.CanvasMargin;*/
+            double Z1 = p1.Z ;/*- MainWindow.CanvasMargin;*/
+            double X2 = p2.X ;/*- MainWindow.CanvasMargin;*/
+            double Y2 = p2.Y ;/*- MainWindow.CanvasMargin;*/
+            double Z2 = p2.Z;/*- MainWindow.CanvasMargin;*/
 
             A = Y1 - Y2;
             B = X2 - X1;

@@ -8,8 +8,8 @@
         mc:Ignorable="d"
         Closing="Window_Closing"
         Title="Super Puper Paint In The World"
-        MinHeight="450" 
-        Height="450" 
+        MinHeight="500" 
+        Height="500" 
         MinWidth="300"
         Width="800"
         >
@@ -58,6 +58,8 @@
                     <RadioButton Name="LocalCordSystem_checkbox" HorizontalAlignment="Left" Foreground="White" Margin="5 0 0 0 " IsEnabled="False" GroupName="Cord" Click="LocalCordSystem_checkbox_Click">Лок</RadioButton>
                     <Label Height="2" Background="Gray" Margin="0 5 0 5 "></Label>
                     <Button Click="OpenMorphing_Click" Cursor="Hand">↝</Button>
+                    <Label Height="2" Background="Gray" Margin="0 5 0 5 "></Label>
+                    <Button Click="OpenAdditionalLines_Click" Cursor="Hand">⟂</Button>
                 </WrapPanel>
             </Grid>
         </Grid>
